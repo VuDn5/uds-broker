@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Copyright (c) 2014 Virtual Cable S.L.
+# Copyright (c) 2017 Virtual Cable S.L.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -33,11 +33,12 @@
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _, ugettext
-from uds.models import Account, AccountUsage
+from uds.models import Account
 from uds.core.util import permissions
 
 from uds.REST.model import ModelHandler
 
+from .accountsusage import AccountsUsage
 
 import logging
 
@@ -51,7 +52,7 @@ class Accounts(ModelHandler):
     Processes REST requests about calendars
     '''
     model = Account
-    detail = {'usage': AccountUsage}
+    detail = {'usage': AccountsUsage }
 
     save_fields = ['name', 'comments', 'tags']
 
