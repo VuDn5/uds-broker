@@ -101,7 +101,7 @@ class ServerManagerUnmanagedServersTest(UDSTestCase):
                     return  # For mypy
                 uuid, counter = assignation
                 prop_name = self.manager.property_name(userservice.user)
-                # uuid shuld be one on registered servers
+                # uuid should be one on registered servers
                 self.assertIn(uuid, self.all_uuids)
                 # Server locked should be None
                 self.assertIsNone(models.Server.objects.get(uuid=uuid).locked_until)
@@ -116,7 +116,7 @@ class ServerManagerUnmanagedServersTest(UDSTestCase):
                 self.assertEqual(
                     mockServerApiRequester.return_value.notify_assign.call_count, expected_notify_assign_calls + 1
                 )
-                # notify_assign paramsh should have been
+                # notify_assign params should have been
                 # request.ServerApiRequester(bestServer).notify_assign(userservice, serviceType, uuid_counter[1])
                 self.assertEqual(
                     mockServerApiRequester.return_value.notify_assign.call_args[0][0], userservice
@@ -177,14 +177,14 @@ class ServerManagerUnmanagedServersTest(UDSTestCase):
                     return  # For mypy
                 uuid, counter = assignation
                 
-                # uuid shuld be one on registered servers
+                # uuid should be one on registered servers
                 self.assertIn(uuid, self.all_uuids)
                 # And only one assignment, so counter is 1
                 self.assertEqual(counter, 1)
                 # Server locked should not be None (that is, it should be locked)
                 self.assertIsNotNone(models.Server.objects.get(uuid=uuid).locked_until)
 
-            # Next one should fail with aa None return
+            # Next one should fail with a None return
             self.assertIsNone(
                 self.assign(self.user_services[NUM_REGISTEREDSERVERS], lock_interval=datetime.timedelta(seconds=1))
             )
@@ -210,7 +210,7 @@ class ServerManagerUnmanagedServersTest(UDSTestCase):
                         self.fail('Assignation returned None')
                         return  # For mypy
                     uuid, counter = assign
-                    # uuid shuld be one on registered servers
+                    # uuid should be one on registered servers
                     self.assertIn(uuid, self.all_uuids)
                     # And only one assignment, so counter is 1
                     self.assertEqual(counter, assignation + 1)
