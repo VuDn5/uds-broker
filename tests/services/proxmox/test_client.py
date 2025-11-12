@@ -52,6 +52,10 @@ logger = logging.getLogger(__name__)
 
 
 class TestProxmoxClient(UDSTransactionTestCase):
+    # Constants for VMID range for test VM creation
+    VMID_BASE: typing.ClassVar[int] = 1_000_000
+    VMID_RANGE: typing.ClassVar[int] = 899_999
+
     resource_group_name: str
 
     pclient: prox_client.ProxmoxClient
@@ -108,7 +112,7 @@ class TestProxmoxClient(UDSTransactionTestCase):
         MAX_RETRIES: typing.Final[int] = 512  # So we don't loop forever, just in case...
         vmid = 0
         for _ in range(MAX_RETRIES):
-            vmid = 1000000 + random.randint(0, 899999)  # Get a reasonable vmid
+            vmid = self.VMID_BASE + random.randint(0, self.VMID_RANGE)  # Get a reasonable vmid
             if self.pclient.is_vmid_available(vmid):
                 return vmid
             # All assigned vmid will be left as unusable on UDS until released by time (3 years)
@@ -206,9 +210,9 @@ class TestProxmoxClient(UDSTransactionTestCase):
         self.assertIsInstance(gpus, list)
 
     def test_list_node_vgpus(self) -> None:
-        vgpues = self.pclient.list_node_vgpus(self.test_vm.node)
-        self.assertIsInstance(vgpues, list)
-        for vgpu in vgpues:
+        vgpus = self.pclient.list_node_vgpus(self.test_vm.node)
+        self.assertIsInstance(vgpus, list)
+        for vgpu in vgpus:
             self.assertIsInstance(vgpu, prox_types.VGPUInfo)
 
     def test_node_has_vgpus_available(self) -> None:
