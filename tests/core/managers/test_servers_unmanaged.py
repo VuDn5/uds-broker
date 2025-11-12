@@ -101,7 +101,7 @@ class ServerManagerUnmanagedServersTest(UDSTestCase):
                     return  # For mypy
                 uuid, counter = assignation
                 prop_name = self.manager.property_name(userservice.user)
-                # uuid shuld be one on registered servers
+                # uuid should be one on registered servers
                 self.assertIn(uuid, self.all_uuids)
                 # Server locked should be None
                 self.assertIsNone(models.Server.objects.get(uuid=uuid).locked_until)
