@@ -206,9 +206,9 @@ class TestProxmoxClient(UDSTransactionTestCase):
         self.assertIsInstance(gpus, list)
 
     def test_list_node_vgpus(self) -> None:
-        vgpues = self.pclient.list_node_vgpus(self.test_vm.node)
-        self.assertIsInstance(vgpues, list)
-        for vgpu in vgpues:
+        vgpus = self.pclient.list_node_vgpus(self.test_vm.node)
+        self.assertIsInstance(vgpus, list)
+        for vgpu in vgpus:
             self.assertIsInstance(vgpu, prox_types.VGPUInfo)
 
     def test_node_has_vgpus_available(self) -> None:
