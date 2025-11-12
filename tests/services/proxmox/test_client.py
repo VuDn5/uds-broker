@@ -258,7 +258,7 @@ class TestProxmoxClient(UDSTransactionTestCase):
     def test_list_ha_groups(self) -> None:
         if self.hagroup == '':
             self.skipTest('No ha groups in this version of proxmox')
-            
+
         groups = self.pclient.list_ha_groups()
         self.assertIsInstance(groups, list)
         for group in groups:
@@ -282,7 +282,7 @@ class TestProxmoxClient(UDSTransactionTestCase):
 
             ha_resources = self.pclient.list_ha_resources(force=True)
             self.assertNotIn(f'vm:{vm.id}', ha_resources)
-            
+
             if self.hagroup:
                 vminfo = self.pclient.get_vm_info(vm.id, force=True)
                 self.assertEqual(vminfo.ha.group, '')
@@ -311,7 +311,7 @@ class TestProxmoxClient(UDSTransactionTestCase):
             snapshots = self.pclient.list_snapshots(vm.id)
             self.assertIsInstance(snapshots, list)
             # should have TWO snapshots, the one created by us and "current"
-            self.assertTrue(len(snapshots) == 2)
+            self.assertEqual(len(snapshots), 2)
             for snapshot in snapshots:
                 self.assertIsInstance(snapshot, prox_types.SnapshotInfo)
 
@@ -327,21 +327,21 @@ class TestProxmoxClient(UDSTransactionTestCase):
             self._wait_for_task(task)
 
             snapshots = self.pclient.list_snapshots(vm.id)
-            self.assertTrue(len(snapshots) == 1)
+            self.assertEqual(len(snapshots), 1)
 
     # get_task_info should work, because we wait for the task to finish in _wait_for_task
 
     def test_list_vms(self) -> None:
         vms = self.pclient.list_vms()
         # At least, the test vm should be there :)
-        self.assertTrue(len(vms) > 0)
+        self.assertGreater(len(vms), 0)
         # Assert the test vm is there
         self.assertIn(self.test_vm.id, [i.id for i in vms])
 
-        self.assertTrue(self.test_vm.id > 0)
-        self.assertTrue(self.test_vm.status in prox_types.VMStatus)
+        self.assertGreater(self.test_vm.id, 0)
+        self.assertIn(self.test_vm.status, prox_types.VMStatus)
         self.assertTrue(self.test_vm.node)
-        self.assertTrue(self.test_vm.template in (True, False))
+        self.assertIn(self.test_vm.template, (True, False))
 
         self.assertIsInstance(self.test_vm.agent, (str, type(None)))
         self.assertIsInstance(self.test_vm.cpus, (int, type(None)))
@@ -385,23 +385,23 @@ class TestProxmoxClient(UDSTransactionTestCase):
         with self._create_test_vm() as vm:
             task_info = self.pclient.start_vm(vm.id)
             self._wait_for_task(task_info)
-            self.assertTrue(self.pclient.get_vm_info(vm.id, force=True).status == prox_types.VMStatus.RUNNING)
+            self.assertEqual(self.pclient.get_vm_info(vm.id, force=True).status, prox_types.VMStatus.RUNNING)
 
             task_info = self.pclient.stop_vm(vm.id)
             self._wait_for_task(task_info)
-            self.assertTrue(self.pclient.get_vm_info(vm.id, force=True).status == prox_types.VMStatus.STOPPED)
+            self.assertEqual(self.pclient.get_vm_info(vm.id, force=True).status, prox_types.VMStatus.STOPPED)
 
     def test_shutdown_vm(self) -> None:
         with self._create_test_vm() as vm:
             task_info = self.pclient.start_vm(vm.id)
             self._wait_for_task(task_info)
-            self.assertTrue(self.pclient.get_vm_info(vm.id, force=True).status == prox_types.VMStatus.RUNNING)
+            self.assertEqual(self.pclient.get_vm_info(vm.id, force=True).status, prox_types.VMStatus.RUNNING)
 
             start_time = time.time()
             # The VM has no SO, so it will not shutdown gracefully but in 2 seconds will be stopped
             task_info = self.pclient.shutdown_vm(vm.id, timeout=2)
             self._wait_for_task(task_info)
-            self.assertTrue(self.pclient.get_vm_info(vm.id, force=True).status == prox_types.VMStatus.STOPPED)
+            self.assertEqual(self.pclient.get_vm_info(vm.id, force=True).status, prox_types.VMStatus.STOPPED)
             end_time = time.time()
             self.assertGreaterEqual(end_time - start_time, 2)
 
@@ -409,15 +409,14 @@ class TestProxmoxClient(UDSTransactionTestCase):
         with self._create_test_vm() as vm:
             result = self.pclient.start_vm(vm.id)
             self._wait_for_task(result)
-            self.assertTrue(self.pclient.get_vm_info(vm.id, force=True).status == prox_types.VMStatus.RUNNING)
+            self.assertEqual(self.pclient.get_vm_info(vm.id, force=True).status, prox_types.VMStatus.RUNNING)
 
             result = self.pclient.suspend_vm(vm.id)
             self._wait_for_task(result)
-            self.assertTrue(self.pclient.get_vm_info(vm.id, force=True).status == prox_types.VMStatus.STOPPED)
-
+            self.assertEqual(self.pclient.get_vm_info(vm.id, force=True).status, prox_types.VMStatus.STOPPED)
             result = self.pclient.resume_vm(vm.id)
             self._wait_for_task(result)
-            self.assertTrue(self.pclient.get_vm_info(vm.id, force=True).status == prox_types.VMStatus.RUNNING)
+            self.assertEqual(self.pclient.get_vm_info(vm.id, force=True).status, prox_types.VMStatus.RUNNING)
 
     def test_convert_vm_to_template_and_clone(self) -> None:
         with self._create_test_vm() as vm:
@@ -439,7 +438,7 @@ class TestProxmoxClient(UDSTransactionTestCase):
         for storage in storages:
             self.assertIsInstance(storage, prox_types.StorageInfo)
 
-        self.assertTrue(len(storages) > 0)
+        self.assertGreater(len(storages), 0)
         self.assertIn(self.storage.storage, [s.storage for s in storages])
 
     def test_get_nodes_stats(self) -> None:
@@ -457,7 +456,7 @@ class TestProxmoxClient(UDSTransactionTestCase):
         for pool in pools:
             self.assertIsInstance(pool, prox_types.PoolInfo)
 
-        self.assertTrue(len(pools) > 0)
+        self.assertGreater(len(pools), 0)
         self.assertIn(self.pool.id, [p.id for p in pools])
 
     def test_get_pool_info(self) -> None:

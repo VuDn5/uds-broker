@@ -121,7 +121,7 @@ class TestUserServiceMulti(UDSTransactionTestCase):
         # Ensure has no token for this test
         userservice.service().token.value = ''
         self.assertEqual(userservice.deploy_for_user(mock.MagicMock()), types.states.TaskState.FINISHED)
-        self.assertTrue(mock.call().set_in_use(True) in db_obj_mock.mock_calls)
+        self.assertIn(mock.call().set_in_use(True), db_obj_mock.mock_calls)
 
     @mock.patch('uds.core.util.net.test_connectivity', return_value=True)
     def test_userservice_with_token(self, test_conn: mock.MagicMock) -> None:
@@ -134,4 +134,4 @@ class TestUserServiceMulti(UDSTransactionTestCase):
         # Ensure has no token for this test
         userservice.service().token.value = 'token_value'
         self.assertEqual(userservice.deploy_for_user(mock.MagicMock()), types.states.TaskState.FINISHED)
-        self.assertFalse(mock.call().set_in_use(True) in db_obj_mock.mock_calls)
+        self.assertNotIn(mock.call().set_in_use(True), db_obj_mock.mock_calls)

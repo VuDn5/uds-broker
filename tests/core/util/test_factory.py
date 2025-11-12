@@ -65,8 +65,8 @@ class FactoryTest(UDSTestCase):
         self.assertIn('first', test_factory.objects())
         self.assertIn('second', test_factory.objects())
 
-        self.assertTrue('first' in test_factory.objects())
-        self.assertTrue('second' in test_factory.objects())
+        self.assertIn('first', test_factory.objects())
+        self.assertIn('second', test_factory.objects())
 
         self.assertCountEqual(test_factory.objects(), ['first', 'second'])
 

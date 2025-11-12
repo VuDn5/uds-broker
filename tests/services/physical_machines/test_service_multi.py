@@ -49,7 +49,7 @@ class TestServiceMulti(UDSTransactionTestCase):
 
         self.assertEqual(service.token.value, fixtures.SERVICE_MULTI_VALUES_DICT['token'])
         server_group = fields.get_server_group_from_field(service.server_group)
-        self.assertTrue(server_group.servers.count() > 0)
+        self.assertGreater(server_group.servers.count(), 0)
         self.assertEqual(service.port.value, fixtures.SERVICE_MULTI_VALUES_DICT['port'])
         self.assertEqual(
             service.ignore_minutes_on_failure.value,
@@ -149,7 +149,7 @@ class TestServiceMulti(UDSTransactionTestCase):
         ip, _mac = fixtures.SERVER_GROUP_IPS_MACS[0]
         server = models.Server.objects.get(ip=ip)
 
-        self.assertTrue(server.locked_until is None)
+        self.assertIsNone(server.locked_until)
 
         service.lock_server(server.uuid)
         # Server should be locked now
@@ -209,7 +209,7 @@ class TestServiceMulti(UDSTransactionTestCase):
         for num in range(len(server_list)):
             unassigned_uuid = service.get_unassigned()
             self.assertIsNotNone(unassigned_uuid)
-            self.assertTrue(models.Server.objects.get(uuid=unassigned_uuid).locked_until is not None)
+            self.assertIsNotNone(models.Server.objects.get(uuid=unassigned_uuid).locked_until)
 
     def test_enumerate_assignables(self) -> None:
         service = fixtures.create_service_multi()

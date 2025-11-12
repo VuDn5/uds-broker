@@ -138,7 +138,7 @@ class ServerManagerManagedServersTest(UDSTestCase):
 
                 prop_name = self.manager.property_name(userservice.user)
                 # uuid shuld be one on registered servers
-                self.assertTrue(uuid in self.all_uuids)
+                self.assertIn(uuid, self.all_uuids)
                 # Server locked should be None
                 self.assertIsNone(models.Server.objects.get(uuid=uuid).locked_until)
 
@@ -182,7 +182,7 @@ class ServerManagerManagedServersTest(UDSTestCase):
                     # uuid2 should be the same as uuid
                     self.assertEqual(uuid, uuid2)
                     # uuid2 should be one on registered servers
-                    self.assertTrue(uuid2 in self.all_uuids)
+                    self.assertIn(uuid2, self.all_uuids)
                     self.assertIsNone(models.Server.objects.get(uuid=uuid).locked_until)  # uuid is uuid2
 
                     # mockServer.get_stats has been called NUM_REGISTEREDSERVERS times, because no new requests has been done
@@ -223,9 +223,9 @@ class ServerManagerManagedServersTest(UDSTestCase):
                     return  # For mypy
                 uuid, counter = assignation
                 # uuid shuld be one on registered servers
-                self.assertTrue(uuid in self.all_uuids)
+                self.assertIn(uuid, self.all_uuids)
                 # And only one assignment, so counter is 1, (because of the lock)
-                self.assertTrue(counter, 1)
+                self.assertEqual(counter, 1)
                 # Server locked should not be None (that is, it should be locked)
                 self.assertIsNotNone(models.Server.objects.get(uuid=uuid).locked_until)
 
@@ -285,7 +285,7 @@ class ServerManagerManagedServersTest(UDSTestCase):
                     if res:
                         uuid, counter = res
                         # uuid shuld be one on registered servers
-                        self.assertTrue(uuid in self.all_uuids)
+                        self.assertIn(uuid, self.all_uuids)
                         # Number of lasting assignations should be one less than before
                         self.assertEqual(counter, 2 - release - 1)
                     else:
