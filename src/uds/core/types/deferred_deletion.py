@@ -37,7 +37,6 @@ import logging
 import enum
 
 from uds.core.consts import deferred_deletion as consts
-from uds.core.types import deferred_deletion as types
 from uds.core.util import storage
 from uds.core.util.model import sql_now
 from uds.models import Service
@@ -75,7 +74,7 @@ class DeletionInfo:
     def key(self) -> str:
         return DeletionInfo.generate_key(self.service_uuid, self.vmid)
 
-    def sync_to_storage(self, group: types.DeferredStorageGroup) -> None:
+    def sync_to_storage(self, group: DeferredStorageGroup) -> None:
         """
         Ensures that this object is stored on the storage
         If exists, it will be updated, if not, it will be created
@@ -113,7 +112,7 @@ class DeletionInfo:
 
     @staticmethod
     def get_from_storage(
-        group: types.DeferredStorageGroup,
+        group: DeferredStorageGroup,
     ) -> tuple[dict[str, 'DynamicService'], list['DeletionInfo']]:
         """
         Get a list of objects to be processed from storage
@@ -167,7 +166,7 @@ class DeletionInfo:
         return services, infos
 
     @staticmethod
-    def count_from_storage(group: types.DeferredStorageGroup) -> int:
+    def count_from_storage(group: DeferredStorageGroup) -> int:
         # Counts the total number of objects in storage
         with DeletionInfo.deferred_storage.as_dict(group) as storage_dict:
             return len(storage_dict)

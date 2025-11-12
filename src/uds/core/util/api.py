@@ -19,12 +19,9 @@ logger = logging.getLogger(__name__)
 
 def _resolve_forwardref(
     ref: typing.Any, globalns: dict[str, typing.Any] | None = None, localns: dict[str, typing.Any] | None = None
-):
+) -> typing.Any:
     if isinstance(ref, typing.ForwardRef):
-        # if not already evaluated, raise an exception
-        if not ref.__forward_evaluated__:
-            return None
-        return ref.__forward_value__
+        return None   # Currently, does not support resulving forward references
     return ref
 
 
@@ -262,7 +259,6 @@ def python_type_to_openapi(
 def api_components(
     dataclass: typing.Type[typing.Any], *, removable_fields: list[str] | None = None
 ) -> 'types.rest.api.Components':
-    from uds.core.util import api as api_util  # Avoid circular import
 
     # If not dataclass, raise a ValueError
     if not dataclasses.is_dataclass(dataclass):
@@ -314,7 +310,7 @@ def api_components(
                 removable_fields=child_removables.get(field.name, []),
             )
 
-        schema_prop = api_util.python_type_to_openapi(field_type, description=description)
+        schema_prop = python_type_to_openapi(field_type, description=description)
 
         schema.properties[field.name] = schema_prop
         if field.default is dataclasses.MISSING and field.default_factory is dataclasses.MISSING:

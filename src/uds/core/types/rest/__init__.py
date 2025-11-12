@@ -69,7 +69,7 @@ class NotRequired:
         Returns a field that is not required.
         This is used to indicate that a field is optional in the REST API.
         """
-        return dataclasses.field(default_factory=lambda: NotRequired(), repr=False, compare=False)
+        return dataclasses.field(default_factory=NotRequired, repr=False, compare=False)
 
 
 # This is a named tuple for convenience, and must be

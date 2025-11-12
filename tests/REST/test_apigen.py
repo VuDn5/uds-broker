@@ -65,7 +65,7 @@ class BaseRestItem(types.rest.BaseRestItem):
     field_union_2: str | int = 1
 
 
-class TestTransport(transports.Transport):
+class FakeTransport(transports.Transport):
     """
     Simpe testing transport.
     """

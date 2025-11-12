@@ -155,13 +155,15 @@ class OpenNebulaLiveDeployment(services.UserService, autoserializable.AutoSerial
     def reset(self) -> types.states.TaskState:
         if self._vmid != '':
             self.service().reset_machine(self._vmid)
-            
+
         return types.states.TaskState.FINISHED
 
     def get_console_connection(self) -> typing.Optional[types.services.ConsoleConnectionInfo]:
         return self.service().get_console_connection(self._vmid)
 
-    def desktop_login(self, username: str, password: str, domain: str = '') -> typing.Optional[types.services.ConsoleConnectionInfo]:
+    def desktop_login(
+        self, username: str, password: str, domain: str = ''
+    ) -> typing.Optional[types.services.ConsoleConnectionInfo]:
         return self.service().desktop_login(self._vmid, username, password, domain)
 
     def process_ready_from_os_manager(self, data: typing.Any) -> types.states.TaskState:
@@ -201,12 +203,12 @@ class OpenNebulaLiveDeployment(services.UserService, autoserializable.AutoSerial
                 Operation.FINISH,
             ]
 
-    def _check_machine_state(self, state: on.types.VmState) -> types.states.TaskState:
+    def _check_machine_state(self, check_state: on.types.VmState) -> types.states.TaskState:
         logger.debug(
             'Checking that state of machine %s (%s) is %s',
             self._vmid,
             self._name,
-            state,
+            check_state,
         )
         state = self.service().get_machine_state(self._vmid)
 
@@ -219,12 +221,8 @@ class OpenNebulaLiveDeployment(services.UserService, autoserializable.AutoSerial
 
         ret = types.states.TaskState.RUNNING
 
-        if isinstance(state, (list, tuple)):
-            if state in state:
-                ret = types.states.TaskState.FINISHED
-        else:
-            if state == state:
-                ret = types.states.TaskState.FINISHED
+        if state == check_state:
+            ret = types.states.TaskState.FINISHED
 
         return ret
 
@@ -423,7 +421,9 @@ class OpenNebulaLiveDeployment(services.UserService, autoserializable.AutoSerial
         }
 
         try:
-            check_fnc: typing.Optional[collections.abc.Callable[[], types.states.TaskState]] = fncs.get(op, None)
+            check_fnc: typing.Optional[collections.abc.Callable[[], types.states.TaskState]] = fncs.get(
+                op, None
+            )
 
             if check_fnc is None:
                 return self._error('Unknown operation found at check queue ({0})'.format(op))

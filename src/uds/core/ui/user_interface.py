@@ -56,7 +56,11 @@ from uds.core.util import modfinder, serializer, validators, ensure
 logger = logging.getLogger(__name__)
 
 # To simplify choice parameters declaration of fields
-_ChoicesParamType: typing.TypeAlias = collections.abc.Iterable[types.ui.ChoiceItem]|collections.abc.Callable[[], list['types.ui.ChoiceItem']]|None
+_ChoicesParamType: typing.TypeAlias = (
+    collections.abc.Iterable[types.ui.ChoiceItem]
+    | collections.abc.Callable[[], list['types.ui.ChoiceItem']]
+    | None
+)
 # typing.Union[
 #     collections.abc.Callable[[], list['types.ui.ChoiceItem']],
 #     collections.abc.Iterable[str | types.ui.ChoiceItem],
@@ -145,7 +149,13 @@ class gui:
     # Helpers
     @staticmethod
     def as_choices(
-        vals: _ChoicesParamType|dict[str, str]|str|collections.abc.Iterable[str|types.ui.ChoiceItem]|None = None,
+        vals: (
+            _ChoicesParamType
+            | dict[str, str]
+            | str
+            | collections.abc.Iterable[str | types.ui.ChoiceItem]
+            | None
+        ) = None,
     ) -> typing.Union[collections.abc.Callable[[], list['types.ui.ChoiceItem']], list['types.ui.ChoiceItem']]:
         """
         Helper to convert from array of strings (or dictionaries) to the same dict used in choice,
@@ -185,8 +195,6 @@ class gui:
             key = lambda item: item.id
         elif key is None:
             key = lambda item: item.text.casefold()
-        else:
-            key = key
         return sorted(choices, key=key, reverse=reverse)
 
     @staticmethod
@@ -784,7 +792,7 @@ class gui:
             if isinstance(value, datetime.datetime):
                 value = value.date()
             elif isinstance(value, datetime.date):
-                value = value
+                pass  # Stay as is
             elif isinstance(value, str):  # YYYY-MM-DD
                 value = datetime.datetime.strptime(value, '%Y-%m-%d').date()
             else:
@@ -1275,9 +1283,7 @@ class gui:
             self._field_info.rows = rows
             self._field_info.choices = gui.as_choices(choices or [])
 
-        def set_choices(
-            self, choices: collections.abc.Iterable[types.ui.ChoiceItem]
-        ) -> None:
+        def set_choices(self, choices: collections.abc.Iterable[types.ui.ChoiceItem]) -> None:
             """
             Set the values for this choice field
             """

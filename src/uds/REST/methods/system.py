@@ -76,8 +76,6 @@ def get_servicepools_counters(
             if not servicepool:
                 servicepool = models.ServicePool()
                 servicepool.id = -1  # Global stats
-            else:
-                servicepool = servicepool
 
             stats = counters.enumerate_accumulated_counters(
                 interval_type=models.StatsCountersAccum.IntervalType.HOUR,

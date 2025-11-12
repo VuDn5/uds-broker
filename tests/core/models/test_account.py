@@ -86,8 +86,8 @@ class ModelAccountTest(UDSTestCase):
     def test_start_single_many(self) -> None:
         acc = models.Account.objects.create(name='Test Account')
         for i in range(32):
-            for i in range(NUM_USERSERVICES):
-                acc.start_accounting(self.user_services[i])
+            for j in range(NUM_USERSERVICES):
+                acc.start_accounting(self.user_services[j])
 
             # Only one usage is createdm even with different accounters
             self.assertEqual(acc.usages.count(), NUM_USERSERVICES, f'loop {i}'.format(i))
@@ -96,8 +96,8 @@ class ModelAccountTest(UDSTestCase):
         # no usage is created because already created one for that user service
         for i in range(32):
             acc = models.Account.objects.create(name='Test Account')
-            for i in range(NUM_USERSERVICES):
-                acc.start_accounting(self.user_services[i])
+            for j in range(NUM_USERSERVICES):
+                acc.start_accounting(self.user_services[j])
 
             self.assertEqual(acc.usages.count(), 0, f'loop {i}')
 
