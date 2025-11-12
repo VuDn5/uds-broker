@@ -161,11 +161,7 @@ class ServerManagerUnmanagedServersTest(UDSTestCase):
 
             # Now, remove all asignations..
             for element_number, userservice in enumerate(self.user_services[:NUM_REGISTEREDSERVERS]):
-                expected_get_stats_calls = NUM_REGISTEREDSERVERS * (element_number + 1)
-                expected_notify_assign_calls = element_number * 33  # 32 in loop + 1 in first assign
-                prop_name = self.manager.property_name(userservice.user)
-
-                # # Remove it, should decrement counter
+               # # Remove it, should decrement counter
                 for i in range(32, -1, -1):  # Deletes 33 times
                     _res = self.manager.release(userservice, self.registered_servers_group)
 

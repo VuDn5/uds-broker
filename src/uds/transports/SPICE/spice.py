@@ -67,8 +67,8 @@ class SPICETransport(BaseSpiceTransport):
     fullscreen = BaseSpiceTransport.fullscreen
     allow_usb_redirection = BaseSpiceTransport.allow_usb_redirection
     allow_usb_redirection_new_plugs = BaseSpiceTransport.allow_usb_redirection_new_plugs
-    allow_usb_redirection_new_plugs = BaseSpiceTransport.allow_smartcards
-    allow_usb_redirection_new_plugs = BaseSpiceTransport.ssl_connection
+    allow_smartcards = BaseSpiceTransport.allow_smartcards
+    ssl_connection = BaseSpiceTransport.ssl_connection
     overrided_proxy = BaseSpiceTransport.overrided_proxy
 
     def get_transport_script(

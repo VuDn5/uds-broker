@@ -199,11 +199,6 @@ class Tickets(Handler):
                     'Authenticator does not contain ANY of the requested groups and force is not used'
                 )
 
-            try:
-                time = int(self.get_param('time') or 60)
-                time = 60 if time < 1 else time
-            except Exception:
-                time = 60
             realname: str = self.get_param('realname', 'username') or ''
 
             pool_uuid = self.get_param('servicepool', 'servicePool')

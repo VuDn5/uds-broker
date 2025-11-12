@@ -129,7 +129,7 @@ def weblogin_required(
     [collections.abc.Callable[..., HttpResponse]], collections.abc.Callable[..., HttpResponse]
 ]:
     """Decorator to set protection to access page
-    
+
     Args:
         role (str, optional): If set, needs this role. Defaults to None.
 
@@ -143,7 +143,7 @@ def weblogin_required(
     """
 
     def decorator(
-        view_func: collections.abc.Callable[..., HttpResponse]
+        view_func: collections.abc.Callable[..., HttpResponse],
     ) -> collections.abc.Callable[..., HttpResponse]:
         @wraps(view_func)
         def _wrapped_view(
@@ -157,7 +157,9 @@ def weblogin_required(
                 return weblogout(request)
 
             if role in (consts.UserRole.ADMIN, consts.UserRole.STAFF):
-                if request.user.is_staff() is False or (role == consts.UserRole.ADMIN and not request.user.is_admin):
+                if request.user.is_staff() is False or (
+                    role == consts.UserRole.ADMIN and not request.user.is_admin
+                ):
                     return HttpResponseForbidden(_('Forbidden'))
 
             return view_func(request, *args, **kwargs)
@@ -178,7 +180,7 @@ def is_trusted_ip_forwarder(ip: str) -> bool:
 
 # Decorator to protect pages that needs to be accessed from "trusted sites"
 def needs_trusted_source(
-    view_func: collections.abc.Callable[..., HttpResponse]
+    view_func: collections.abc.Callable[..., HttpResponse],
 ) -> collections.abc.Callable[..., HttpResponse]:
     """
     Decorator to set protection to access page
@@ -465,7 +467,6 @@ def weblogout(
         # remove, if exists, tag from session
         exit_page = reverse(types.auth.AuthenticationInternalUrl.LOGIN)
 
-    response = HttpResponseRedirect(exit_url or exit_page)
     try:
         if request.user:
             authenticator = request.user.manager.get_instance()
@@ -481,13 +482,14 @@ def weblogout(
                     username=request.user.name,
                     srcip=request.ip,
                 )
-            authenticator.hook_web_logout(username, request, response)
+            authenticator.hook_web_logout(username, request, HttpResponseRedirect(exit_url or exit_page))
     finally:
         # Try to delete session
         request.session.flush()
         request.authorized = False
 
-    return response
+    # Rebuild response with updated session
+    return HttpResponseRedirect(exit_url or exit_page)
 
 
 def log_login(

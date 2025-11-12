@@ -427,10 +427,6 @@ def enable_service(
     # Maybe we could even protect this even more by limiting referer to own server /? (just a meditation..)
     logger.debug('idService: %s, idTransport: %s', service_id, transport_id)
     url = ''
-    error = gettext('Service not ready. Please, try again in a while.')
-
-    # If meta service, process and rebuild idService & idTransport
-
     try:
         info = UserServiceManager.manager().get_user_service_info(
             request.user, request.os, request.ip, service_id, transport_id, test_userservice_status=False

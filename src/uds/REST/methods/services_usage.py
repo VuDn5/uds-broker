@@ -132,13 +132,13 @@ class ServicesUsage(DetailHandler[ServicesUsageItem]):
             raise exceptions.rest.ResponseError(_('Error getting services usage')) from None
 
     def get_item(self, parent: 'Model', item: str) -> ServicesUsageItem:
-        parent = ensure.is_instance(parent, Provider)
+        ensure.is_instance(parent, Provider)  # Just ensures type
         return ServicesUsage.item_as_dict(
             UserService.objects.filter(deployed_service__service_uuid=process_uuid(item)).get()
         )
 
     def get_table(self, parent: 'Model') -> types.rest.TableInfo:
-        parent = ensure.is_instance(parent, Provider)
+        ensure.is_instance(parent, Provider)  # Just ensures type
         return (
             ui_utils.TableBuilder(_('Services Usage'))
             .datetime_column(name='state_date', title=_('Access'))

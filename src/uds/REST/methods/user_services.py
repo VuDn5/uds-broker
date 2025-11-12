@@ -160,15 +160,14 @@ class AssignedUserService(DetailHandler[UserServiceItem]):
 
         return super().apply_sort(qs)
     
-    def get_qs(self, for_cached: bool) -> QuerySet[models.UserService]:
-        parent = ensure.is_instance(self._parent, models.ServicePool)
+    def get_qs(self, for_cached: bool, parent: 'models.ServicePool') -> QuerySet[models.UserService]:
         if for_cached:
             return parent.cached_users_services()
         return parent.assigned_user_services()
 
     def do_get_item_position(self, for_cached: bool, parent: 'Model', item_uuid: str) -> int:
         parent = ensure.is_instance(parent, models.ServicePool)
-        return self.calc_item_position(item_uuid, self.get_qs(for_cached).all())
+        return self.calc_item_position(item_uuid, self.get_qs(for_cached, parent).all())
     
     def get_item_position(self, parent: Model, item_uuid: str) -> int:
         return self.do_get_item_position(for_cached=False, parent=parent, item_uuid=item_uuid)
@@ -182,7 +181,7 @@ class AssignedUserService(DetailHandler[UserServiceItem]):
         parent = ensure.is_instance(parent, models.ServicePool)
 
         return AssignedUserService.userservice_item(
-            self.get_qs(for_cached).get(uuid=process_uuid(item)),
+            self.get_qs(for_cached, parent).get(uuid=process_uuid(item)),
             props={
                 k: v
                 for k, v in models.Properties.objects.filter(
@@ -433,7 +432,7 @@ class Groups(DetailHandler[GroupItem]):
         raise exceptions.rest.NotSupportedError('Single group retrieval not implemented inside assigned groups')
 
     def get_table(self, parent: 'Model') -> TableInfo:
-        parent = typing.cast(typing.Union['models.ServicePool', 'models.MetaPool'], parent)
+        typing.cast(typing.Union['models.ServicePool', 'models.MetaPool'], parent)  # Just ensures type
         return (
             ui_utils.TableBuilder(_('Assigned groups'))
             .text_column(name='group_name', title=_('Name'))
@@ -634,7 +633,7 @@ class Publications(DetailHandler[PublicationItem]):
         )
 
     def get_table(self, parent: 'Model') -> TableInfo:
-        parent = ensure.is_instance(parent, models.ServicePool)
+        ensure.is_instance(parent, models.ServicePool)  # Just ensures type
         return (
             ui_utils.TableBuilder(_('Publications'))
             .numeric_column(name='revision', title=_('Revision'), width='6em')

@@ -118,6 +118,7 @@ class Command(BaseCommand):
     def handle(self, *args: typing.Any, **options: typing.Any) -> None:
         logger.debug("Handling UDS FS")
 
+        # Mount FUSE filesystem and waits here until unmounted
         _fuse = FUSE(
             UDSFS(),
             options['mount_point'],

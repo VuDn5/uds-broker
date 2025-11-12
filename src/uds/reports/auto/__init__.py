@@ -135,9 +135,9 @@ class ReportAuto(Report, metaclass=ReportAutoType):
         filters = [self.source.value] if isinstance(self.source, gui.ChoiceField) else self.source.value
 
         if '0-0-0-0' in filters:
-            items = model.objects.all()
+            items = MODEL.objects.all()
         else:
-            items = model.objects.filter(uuid__in=filters)
+            items = MODEL.objects.filter(uuid__in=filters)
 
         return items
 

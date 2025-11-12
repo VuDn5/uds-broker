@@ -321,11 +321,11 @@ class ServersServers(DetailHandler[ServerItem]):
 
     # Custom methods
     def maintenance(self, parent: 'Model', id: str) -> typing.Any:
-        parent = ensure.is_instance(parent, models.ServerGroup)
         """
         Custom method that swaps maintenance mode state for a server
         :param item:
         """
+        ensure.is_instance(parent, models.ServerGroup)  # Just ensures type
         item = models.Server.objects.get(uuid=process_uuid(id))
         self.check_access(item, types.permissions.PermissionType.MANAGEMENT)
         item.maintenance_mode = not item.maintenance_mode

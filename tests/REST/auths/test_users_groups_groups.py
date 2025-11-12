@@ -128,7 +128,7 @@ class GroupsTest(rest.test.RESTActorTestCase):
             meta=True, groups=[self.simple_groups[0].uuid, self.simple_groups[1].uuid]
         )
 
-        response = self.client.rest_put(
+        self.client.rest_put(
             url,
             group_dct,
         )

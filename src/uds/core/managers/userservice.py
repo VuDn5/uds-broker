@@ -369,8 +369,6 @@ class UserServiceManager(metaclass=singleton.Singleton):
         ):
             return types.services.ServicePoolStats.null()  # No cache needed for this servicepool
 
-        service_instance = servicepool.service.get_instance()
-
         servicepool.userservices.update()  # Cleans cached queries
 
         # If this deployedService don't have a publication active and needs it, ignore it

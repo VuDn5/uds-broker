@@ -91,6 +91,10 @@ class ServerApiRequester:
         Sets up the request for the server
         """
         min_server_version = min_server_version or consts.system.MIN_SERVER_VERSION
+        if self.server.version < min_server_version:
+            raise Exception(
+                f'Server version {self.server.version} is lower than minimum required {min_server_version}'
+            )
         # If server has a cert, save it to a file
         verify: typing.Union[str, bool] = False
         try:

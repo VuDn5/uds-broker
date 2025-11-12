@@ -63,7 +63,7 @@ class JobsFactory(factory.Factory['Job']):
                     # We use database server datetime
                     now = sql_now()
                     next_ = now
-                    job = Scheduler.objects.create(
+                    Scheduler.objects.create(
                         name=name,
                         frecuency=type_.frecuency,
                         last_execution=now,

@@ -406,7 +406,7 @@ class Groups(DetailHandler[GroupItem]):
     def enum_types(
         self, parent: 'Model', for_type: typing.Optional[str]
     ) -> collections.abc.Iterable[types.rest.TypeInfo]:
-        parent = ensure.is_instance(parent, Authenticator)
+        ensure.is_instance(parent, Authenticator)  # Just ensures type
         types_dict: dict[str, dict[str, str]] = {
             'group': {'name': _('Group'), 'description': _('UDS Group')},
             'meta': {'name': _('Meta group'), 'description': _('UDS Meta Group')},
@@ -560,7 +560,6 @@ class Groups(DetailHandler[GroupItem]):
                         if not users_set:
                             break  # If already empty, stop
             users = list(users_set or {}) if users_set else []
-            users_set = None
         else:
             users = list(group.users.all())
 

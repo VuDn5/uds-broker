@@ -626,7 +626,6 @@ class DynamicUserService(services.UserService, autoserializable.AutoSerializable
         """
         This method is called for shutdown the service
         """
-        shutdown_stamp = -1
         if not self.service().is_running(self, self._vmid):
             # Already stopped, just finish
             return

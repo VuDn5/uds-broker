@@ -242,15 +242,6 @@ class ServicesPools(ModelHandler[ServicePoolItem]):
         # if item does not have an associated service, hide it (the case, for example, for a removed service)
         # Access from dict will raise an exception, and item will be skipped
 
-        poolgroup_id: typing.Optional[str] = None
-        poolgroup_name: str = _('Default')
-        poolgroup_thumb: str = DEFAULT_THUMB_BASE64
-        if item.servicesPoolGroup:
-            poolgroup_id = item.servicesPoolGroup.uuid
-            poolgroup_name = item.servicesPoolGroup.name
-            if item.servicesPoolGroup.image:
-                poolgroup_thumb = item.servicesPoolGroup.image.thumb64
-
         state = item.state
         if item.is_in_maintenance():
             state = State.MAINTENANCE
@@ -302,9 +293,9 @@ class ServicesPools(ModelHandler[ServicePoolItem]):
             restrained = item.is_restrained()
             usage_count = -1
 
-        poolgroup_id = None
-        poolgroup_name = _('Default')
-        poolgroup_thumb = DEFAULT_THUMB_BASE64
+        poolgroup_id: str|None = None
+        poolgroup_name: str = _('Default')
+        poolgroup_thumb: str = DEFAULT_THUMB_BASE64
         if item.servicesPoolGroup is not None:
             poolgroup_id = item.servicesPoolGroup.uuid
             poolgroup_name = item.servicesPoolGroup.name

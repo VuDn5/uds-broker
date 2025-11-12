@@ -127,7 +127,7 @@ class TunnelServers(DetailHandler[TunnelServerItem]):
             Custom method that swaps maintenance mode state for a tunnel server
 
         """
-        parent = ensure.is_instance(parent, models.ServerGroup)
+        ensure.is_instance(parent, models.ServerGroup)  # Just ensures type
         item = models.Server.objects.get(uuid=process_uuid(id))
         self.check_access(item, uds.core.types.permissions.PermissionType.MANAGEMENT)
         item.maintenance_mode = not item.maintenance_mode

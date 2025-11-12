@@ -92,7 +92,7 @@ class WebLoginLogoutTest(test.WEBTestCase):
         users_pass = [(user.name, user.name) for user in users + admins + stafs]
         users_pass.append((root, rootpass))
         for num, up in enumerate(users_pass, start=1):
-            response = self.do_login(up[0], up[1], auth.uuid)
+            self.do_login(up[0], up[1], auth.uuid)
             # Now invoke logout
             response = typing.cast('HttpResponse', self.client.get('/uds/page/logout'))
             self.assertRedirects(response, reverse('page.login'), status_code=302)
