@@ -122,7 +122,9 @@ class Connection(Handler):
             logger.exception("Exception")
             return Connection.result(error=str(e))
 
-    def script(self, id_service: str, id_transport: str, scrambler: str, hostname: str) -> dict[str, typing.Any]:
+    def script(
+        self, id_service: str, id_transport: str, scrambler: str, hostname: str
+    ) -> dict[str, typing.Any]:
         try:
             info = UserServiceManager.manager().get_user_service_info(
                 self._user, self._request.os, self._request.ip, id_service, id_transport
@@ -136,7 +138,7 @@ class Connection(Handler):
             if not info.ip:
                 raise ServiceNotReadyError()
 
-            transport_script = info.transport.get_instance().encoded_transport_script(
+            transport_script = info.transport.get_instance().get_transport_script(
                 info.userservice,
                 info.transport,
                 info.ip,
@@ -146,7 +148,7 @@ class Connection(Handler):
                 self._request,
             )
 
-            return Connection.result(result=transport_script)
+            return Connection.result(result=transport_script.as_dict())
         except ServiceNotReadyError as e:
             # Refresh ticket and make this retrayable
             return Connection.result(

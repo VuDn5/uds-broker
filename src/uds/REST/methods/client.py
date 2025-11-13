@@ -152,7 +152,7 @@ class Client(Handler):
             if not info.ip:
                 raise ServiceNotReadyError()
 
-            transport_script = info.transport.get_instance().encoded_transport_script(
+            transport_script = info.transport.get_instance().get_transport_script(
                 info.userservice,
                 info.transport,
                 info.ip,
@@ -171,13 +171,9 @@ class Client(Handler):
                 is_logging_enabled = False if log_enabled_since <= log_enabled_since_limit else True
             except Exception:
                 is_logging_enabled = False
-            log: dict[str, 'str|None'] = {
-                'level': 'DEBUG',
-                'ticket': None,
-            }
 
-            if is_logging_enabled:
-                log['ticket'] = TicketStore.create(
+            transport_script.log.ticket = (
+                TicketStore.create(
                     {
                         'user': self._request.user.uuid,
                         'userservice': info.userservice.uuid,
@@ -187,16 +183,10 @@ class Client(Handler):
                     # Or 24 hours after creation, whatever happens first
                     validity=60 * 60 * 24,
                 )
-
-            return Client.result(
-                result={
-                    'script': transport_script.script,
-                    'type': transport_script.script_type,
-                    'signature': transport_script.signature_b64,  # It is already on base64
-                    'params': transport_script.encoded_parameters,
-                    'log': log,
-                }
+                if is_logging_enabled
+                else None
             )
+            return Client.result(result=transport_script.as_dict())
         except ServiceNotReadyError as e:
             # Refresh ticket and make this retrayable
             TicketStore.revalidate(ticket, 20)  # Retry will be in at most 5 seconds, so 20 is fine :)

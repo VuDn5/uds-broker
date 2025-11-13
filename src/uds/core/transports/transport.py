@@ -30,7 +30,6 @@
 """
 Author: Adolfo Gómez, dkmaster at dkmon dot com
 """
-import codecs
 import collections.abc
 import logging
 import sys
@@ -43,6 +42,8 @@ from uds.core import consts, types
 from uds.core.managers.crypto import CryptoManager
 from uds.core.module import Module
 from uds.core.util import net
+
+from .default_script import get_default_script
 
 # Not imported at runtime, just for type checking
 if typing.TYPE_CHECKING:
@@ -238,49 +239,7 @@ class Transport(Module):
         If this is an uds transport, this will return the tranport script needed for executing
         this on client
         """
-        return types.transports.TransportScript(
-            script="raise Exception('The selected transport is not supported on your platform.'.format(transport=sp['transport']))",
-            signature_b64='Ki6Emu7h3gBmqipOD7uW6ytIXQLg149a2vRcCHcl2yyIXqX0'
-            '4JAViKwhVrbQhAZ5kli1uzLOKa7heLMT0Wif6SAckcMuyOng'
-            'lrEZW0xnzuCWYTj3373a1qWX8wres8mzxA9x3cQ9PuzDSRDS'
-            'ZMbXbVTifkZU0t5hAV4poLe7oAkjx9bypmQOjFB3MN0XRqGT'
-            'AqlT+bViL4a8FL/pkMIDk/2Z2PGh2yF8FkWBab34eSHCwXA8'
-            'GgZ/xC3VtO7c1hq6bxNdneVxxLM74EYRpqy4rXX8QXCoZ2kB'
-            '+7VMviG+lqXDkj1xQpTK77rnYj6ye6mSHLPd+bLkQ3/XqV6e'
-            '1pqTlVwas1PMmsduEuhEJ+cRh9IhOMCM9oTWcngPGD8n9CQM'
-            'k3eMmb/73Tx5ZCg6BhpNjZNKmnomEmEFkdQpX3afZ4bS9Nic'
-            'E9M+IJTv+g5AImGZTZXsskDTYP+bQeygugXw0p3YZqDaJeIp'
-            'C2u1gDZjgCJ6FobGVziqdqLNRNOjwjP82y8nU6jvs6rnQD+4'
-            'qBps9EVau//q3nXyTbWtQfmC8hqQ5hsFID9K27WNy92OHqIc'
-            'fd6NuTG7jC+TiHyMGC937TfiQQy+0J8BiQtjY4Q3I+Sws7AT'
-            'XXv7MJMqYLXIVi0Fn8yrTiFqEDP2l4eFwKv7XZn5c+RO8ZE9'
-            'NbxIWj2Fvuw=',
-            parameters={'transport': transport.name},
-        )
-
-    def encoded_transport_script(
-        self,
-        userservice: 'models.UserService',
-        transport: 'models.Transport',
-        ip: str,
-        os: 'types.os.DetectedOsInfo',  # pylint: disable=redefined-outer-name
-        user: 'models.User',
-        password: str,
-        request: 'ExtendedHttpRequestWithUser',
-    ) -> types.transports.TransportScript:
-        """
-        Encodes the script so the client can understand it
-        """
-        transport_script = self.get_transport_script(userservice, transport, ip, os, user, password, request)
-        logger.debug('Transport script: %s', transport_script)
-
-        return types.transports.TransportScript(
-            script=codecs.encode(codecs.encode(transport_script.script.encode(), 'bz2'), 'base64')
-            .decode()
-            .replace('\n', ''),
-            signature_b64=transport_script.signature_b64,
-            parameters=transport_script.parameters,
-        )
+        return get_default_script(transport)
 
     def get_relative_script(
         self, scriptname: str, params: collections.abc.Mapping[str, typing.Any]
@@ -300,12 +259,13 @@ class Transport(Module):
 
         with open(os.path.join(base_path, scriptname), 'r', encoding='utf8') as script_file:
             script = script_file.read()
-        with open(os.path.join(base_path, scriptname + '.signature'), 'r', encoding='utf8') as signature_file:
+        with open(os.path.join(base_path, scriptname + '.mldsa65.sig'), 'r', encoding='utf8') as signature_file:
             signature = signature_file.read()
 
         return types.transports.TransportScript(
             script=script,
-            script_type='python',
+            script_type=types.transports.ScriptType.JAVASCRIPT,
+            signature_algorithm=types.transports.SignatureAlgorithm.MLDSA65,
             signature_b64=signature,
             parameters=params,
         )
@@ -315,15 +275,11 @@ class Transport(Module):
         osname: str,
         type: typing.Literal['tunnel', 'direct'],
         params: collections.abc.Mapping[str, typing.Any],
-        client_version: str | None = None,
     ) -> types.transports.TransportScript:
         """
         Returns a script for the given os and type
         """
-        if (client_version or '0.0') >= '5.0.0':
-            return self.get_relative_script(f'scripts/{osname.lower()}/{type}.js', params)
-
-        return self.get_relative_script(f'scripts/{osname.lower()}/{type}.py', params)
+        return self.get_relative_script(f'scripts/{osname.lower()}/{type}.js', params)
 
     def get_link(
         self,

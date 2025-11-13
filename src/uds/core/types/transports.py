@@ -80,13 +80,36 @@ class Grouping(enum.StrEnum):
         return gettext(self.value)
 
 
+class ScriptType(enum.StrEnum):
+    JAVASCRIPT = 'javascript'
+
+
+class SignatureAlgorithm(enum.StrEnum):
+    MLDSA65 = 'mldsa65'  # Post quantum safe algorithm
+
+
+@dataclasses.dataclass
+class TransportLog:
+    level: str = 'info'  # info, debug, error
+    ticket: str | None = None
+
+    def as_dict(self) -> dict[str, typing.Any]:
+        return {
+            'level': self.level,
+            'ticket': self.ticket,
+        }
+
+
 @dataclasses.dataclass
 class TransportScript:
-    script: str = ''
-    # currently only python is supported
-    script_type: typing.Literal['python'] = 'python'
-    signature_b64: str = ''  # Signature of the script in base64
-    parameters: collections.abc.Mapping[str, typing.Any] = dataclasses.field(default_factory=dict[str, typing.Any])
+    script: str
+    script_type: ScriptType
+    signature_algorithm: SignatureAlgorithm
+    signature_b64: str  # Signature of the script in base64
+    parameters: collections.abc.Mapping[str, typing.Any] = dataclasses.field(
+        default_factory=dict[str, typing.Any]
+    )
+    log: TransportLog = dataclasses.field(default_factory=TransportLog)
 
     @property
     def encoded_parameters(self) -> str:
@@ -94,3 +117,20 @@ class TransportScript:
         Returns encoded parameters for transport script
         """
         return codecs.encode(codecs.encode(json.dumps(self.parameters).encode(), 'bz2'), 'base64').decode()
+
+    @property
+    def encoded_script(self) -> str:
+        """
+        Returns encoded script
+        """
+        return codecs.encode(codecs.encode(self.script.encode(), 'bz2'), 'base64').decode().replace('\n', '')
+
+    def as_dict(self) -> dict[str, typing.Any]:
+        return {
+            'script': self.encoded_script,
+            'type': self.script_type,
+            'signature_algorithm': self.signature_algorithm,
+            'signature_b64': self.signature_b64,
+            'params': self.encoded_parameters,
+            'log': self.log.as_dict(),
+        }
