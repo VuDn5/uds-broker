@@ -68,16 +68,6 @@ class OpenshiftService(DynamicService):
     try_soft_shutdown = DynamicService.try_soft_shutdown  # Before deleting, try a soft shutdown
     maintain_on_error = DynamicService.maintain_on_error  # If an error occurs, maintain the service
     put_back_to_cache = DynamicService.put_back_to_cache
-    
-    publication_timeout = gui.NumericField(
-        order=6,
-        label=_('Publication Timeout'),
-        tooltip=_('Timeout in seconds to wait for the publication to be visible'),
-        default=120,
-        required=True,
-        length=5,
-        tab=types.ui.Tab.ADVANCED,
-    )
 
     prov_uuid = gui.HiddenField(value=None)
 
