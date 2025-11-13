@@ -106,7 +106,10 @@ class Client:
         if self._api is None:
             try:
                 self._api = ovirtsdk4.Connection(
-                    url='https://' + self._host + (f':{self._port}' if self._port != 443 else '') + '/ovirt-engine/api',
+                    url='https://'
+                    + self._host
+                    + (f':{self._port}' if self._port != 443 else '')
+                    + '/ovirt-engine/api',
                     username=self._username,
                     password=self._password,
                     timeout=self._timeout,
@@ -294,7 +297,7 @@ class Client:
             # cluster = ov.clusters_service().service('00000002-0002-0002-0002-0000000002e4') # .get()
             # vm = ov.vms_service().service('e7ff4e00-b175-4e80-9c1f-e50a5e76d347') # .get()
 
-            vms: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vms = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             cluster: typing.Any = typing.cast(
                 typing.Any, self.api.system_service().clusters_service().service(cluster_id).get()
@@ -423,7 +426,7 @@ class Client:
         Lists the snapshots of the given machine
         """
         with _access_lock():
-            vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             if vm_service.get() is None:
                 raise Exception('Machine not found')
@@ -439,7 +442,7 @@ class Client:
         Returns the snapshot info for the given snapshot id
         """
         with _access_lock():
-            vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             if vm_service.get() is None:
                 raise Exception('Machine not found')
@@ -458,7 +461,7 @@ class Client:
         Creates a snapshot of the machine with the given name and description
         """
         with _access_lock():
-            vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             if vm_service.get() is None:
                 raise Exception('Machine not found')
@@ -473,7 +476,7 @@ class Client:
         Removes the snapshot with the given id
         """
         with _access_lock():
-            vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             if vm_service.get() is None:
                 raise Exception('Machine not found')
@@ -492,7 +495,7 @@ class Client:
         Returns:
         """
         with _access_lock():
-            vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             if vm_service.get() is None:
                 raise Exception('Machine not found')
@@ -509,13 +512,13 @@ class Client:
         Returns:
         """
         with _access_lock():
-            vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             if vm_service.get() is None:
                 raise Exception('Machine not found')
 
             vm_service.stop()
-            
+
     def shutdown_machine(self, vmid: str) -> None:
         """
         Tries to shutdown a machine. No check is done, it is simply requested to oVirt
@@ -526,7 +529,7 @@ class Client:
         Returns:
         """
         with _access_lock():
-            vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             if vm_service.get() is None:
                 raise Exception('Machine not found')
@@ -543,7 +546,7 @@ class Client:
         Returns:
         """
         with _access_lock():
-            vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             if vm_service.get() is None:
                 raise Exception('Machine not found')
@@ -560,7 +563,7 @@ class Client:
         Returns:
         """
         with _access_lock():
-            vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
             if vm_service.get() is None:
                 raise Exception('Machine not found')
@@ -573,7 +576,7 @@ class Client:
         """
         with _access_lock():
             try:
-                vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+                vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
 
                 if vm_service.get() is None:
                     raise Exception('Machine not found')
@@ -589,19 +592,17 @@ class Client:
         # Fix for usb support
         with _access_lock():
             usb = ovirtsdk4.types.Usb(enabled=True, type=ovirtsdk4.types.UsbType.NATIVE)
-            vms: typing.Any = self.api.system_service().vms_service().service(vmid)
+            vms = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
             vmu = ovirtsdk4.types.Vm(usb=usb)
             vms.update(vmu)
 
-    def get_console_connection_info(
-        self, vmid: str
-    ) -> typing.Optional[types.services.ConsoleConnectionInfo]:
+    def get_console_connection_info(self, vmid: str) -> typing.Optional[types.services.ConsoleConnectionInfo]:
         """
         Gets the connetion info for the specified machine
         """
         with _access_lock():
             try:
-                vm_service: typing.Any = self.api.system_service().vms_service().service(vmid)
+                vm_service = typing.cast(typing.Any, self.api.system_service().vms_service().service(vmid))
                 vm = vm_service.get()
 
                 if vm is None:
