@@ -55,7 +55,7 @@ class Command(BaseCommand):
         GlobalConfig.initialize()
 
         sys.stdout.write("Cache...\n")
-        # UDSs cache
+        # UDS s cache
         Cache.purge_outdated()
         # Django caches
         cache.clear()

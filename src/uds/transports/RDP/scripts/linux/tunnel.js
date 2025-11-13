@@ -34,7 +34,7 @@ let parameters = data.freerdp_params.map((param) => Utils.expandVars(param));
 
 let tunnel = null;
 try {
-    tunnel = await Tasks.startTunnel(data.tunHost, data.tunPort, data.ticket, null, data.tunChk);
+    tunnel = await Tasks.startTunnel(data.tunnel.host, data.tunel.port, data.tunnel.ticket, null, data.tunnel.options);
 } catch (error) {
     Logger.error(`Failed to start tunnel: ${error.message}`);
     throw new Error(`Failed to start tunnel: ${error.message}`);

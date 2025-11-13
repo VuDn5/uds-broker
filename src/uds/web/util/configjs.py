@@ -60,7 +60,7 @@ def uds_js(request: 'ExtendedHttpRequest') -> str:
     auth_host = (
         request.META.get('HTTP_HOST') or request.META.get('SERVER_NAME') or 'auth_host'
     )  # Last one is a placeholder in case we can't locate host name
-    
+
     role: str = 'user'
     user: typing.Optional['User'] = request.user if request.authorized else None
 
@@ -187,6 +187,7 @@ def uds_js(request: 'ExtendedHttpRequest') -> str:
             'transports': [t.name for t in Transport.objects.all() if t.is_ip_allowed(request.ip)],
             'ip': request.ip,
             'ip_proxy': request.ip_proxy,
+            'groups': [g.name for g in user.groups.all()],
         }
 
     plugins = udsclients_info.PLUGINS.copy()

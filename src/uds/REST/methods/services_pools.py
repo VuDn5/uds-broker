@@ -36,7 +36,7 @@ import logging
 import typing
 
 from django.utils.translation import gettext, gettext_lazy as _
-from django.db.models import Model, Count, Q
+from django.db.models import Model, Count, Q, Case, When, Value, F, IntegerField, ExpressionWrapper, FloatField
 
 from uds.core import types, exceptions, consts
 from uds.core.managers.userservice import UserServiceManager
@@ -184,6 +184,55 @@ class ServicesPools(ModelHandler[ServicePoolItem]):
             field_name, is_descending = field_info
             order_by_field = f"-{field_name}" if is_descending else field_name
             return qs.order_by(order_by_field)
+        if field_info := self.get_sort_field_info('user_services_count'):
+            # Annotate the count
+            qs = qs.annotate(
+                valid_count=Count('userServices', filter=~Q(userServices__state__in=State.INFO_STATES))
+            )
+            _, is_descending = field_info
+            order_by_field = f"-valid_count" if is_descending else "valid_count"
+            return qs.order_by(order_by_field)
+        if field_info := self.get_sort_field_info('user_services_in_preparation'):
+            # Annotate the count
+            qs = qs.annotate(
+                preparing_count=Count('userServices', filter=Q(userServices__state=State.PREPARING))
+            )
+            _, is_descending = field_info
+            order_by_field = f"-preparing_count" if is_descending else "preparing_count"
+            return qs.order_by(order_by_field)
+        if field_info := self.get_sort_field_info('pool_group_name'):
+            _, is_descending = field_info
+            order_by_field = f"-servicesPoolGroup__name" if is_descending else "servicesPoolGroup__name"
+            return qs.order_by(order_by_field)
+        if field_info := self.get_sort_field_info('parent'):
+            _, is_descending = field_info
+            order_by_field = f"-service__name" if is_descending else "service__name"
+            return qs.order_by(order_by_field)
+        
+        if field_info := self.get_sort_field_info('usage'):
+            # Not perfect, but almost.. some times max comes from elsewhere, and we
+            # cannot control that.
+            qs = qs.annotate(
+                usage_count=Count(
+                    'userServices',
+                    filter=Q(
+                        userServices__state__in=State.VALID_STATES,
+                        userServices__cache_level=0,
+                    ),
+                ),
+                max_srvs_safe=Case(
+                    When(max_srvs__lt=1, then=Value(999999999)),  # o cualquier valor enorme
+                    default=F('max_srvs'),
+                    output_field=IntegerField(),
+                ),
+                usage_ratio=ExpressionWrapper(
+                    F('usage_count') / F('max_srvs_safe'),
+                    output_field=FloatField(),
+                )
+            )
+            _, is_descending = field_info
+            order_by_field = f"-usage_ratio" if is_descending else "usage_ratio"
+            return qs.order_by(order_by_field)
 
         return super().apply_sort(qs)
 
@@ -193,7 +242,7 @@ class ServicesPools(ModelHandler[ServicePoolItem]):
         # Optimized query, due that there is a lot of info needed for theee
         d = sql_now() - datetime.timedelta(seconds=GlobalConfig.RESTRAINT_TIME.as_int())
         return super().get_items(
-            sumarize=kwargs.get('overview', True),
+            sumarize=kwargs.get('sumarize', True),
             query=(
                 ServicePool.objects.prefetch_related(
                     'service',
@@ -293,7 +342,7 @@ class ServicesPools(ModelHandler[ServicePoolItem]):
             restrained = item.is_restrained()
             usage_count = -1
 
-        poolgroup_id: str|None = None
+        poolgroup_id: str | None = None
         poolgroup_name: str = _('Default')
         poolgroup_thumb: str = DEFAULT_THUMB_BASE64
         if item.servicesPoolGroup is not None:

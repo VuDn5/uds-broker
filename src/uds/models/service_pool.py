@@ -673,23 +673,30 @@ class ServicePool(UUIDModel, TaggingMixin):
         """
         return self.userServices.filter(cache_level=types.services.CacheLevel.NONE)
 
+    def get_max(self) -> int:
+        """
+        Returns the maximum number of user services allowed for this service pool.
+        If max_srvs is 0, it returns the userservices_limit of the service instance.
+        """
+        max_user_services = self.max_srvs
+        if max_user_services == 0:
+            max_user_services = self.service.get_instance().userservices_limit
+        if max_user_services == 0 or max_user_services == consts.UNLIMITED:
+            return consts.UNLIMITED
+        return max_user_services
+
     def usage(self, cached_value: int = -1) -> types.pools.UsageInfo:
         """
         Returns the % used services, then count and the max related to "maximum" user services
         If no "maximum" number of services, will return 0% ofc
         cached_value is used to optimize (if known the number of assigned services, we can avoid to query the db)
         """
-        maxs = self.max_srvs
-        if maxs == 0:
-            maxs = self.service.get_instance().userservices_limit
+        maxs = self.get_max()
 
         if cached_value == -1:
             cached_value = (
                 self.assigned_user_services().filter(state__in=types.states.State.VALID_STATES).count()
             )
-
-        if maxs == 0 or maxs == consts.UNLIMITED:
-            return types.pools.UsageInfo(cached_value, consts.UNLIMITED)
 
         return types.pools.UsageInfo(cached_value, maxs)
 

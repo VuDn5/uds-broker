@@ -231,6 +231,11 @@ class ModelHandler(BaseModelHandler[types.rest.T_Item], abc.ABC):
     def get_item_position(self, item_uuid: str, query: QuerySet[T] | None = None) -> int:
         qs = self.filter_model_queryset(query)
         
+        # Ensure some order to have stable positions on reusing query
+        # At least on postgres, second query 
+        if not self.MODEL._meta.ordering:  
+            qs = qs.order_by('pk')
+        
         # Find item in qs, may be none, then return -1
         obj = qs.filter(uuid__iexact=item_uuid).first()
         if obj:

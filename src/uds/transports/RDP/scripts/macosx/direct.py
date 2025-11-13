@@ -150,25 +150,6 @@ if kind == 'thincast':
         theFile = sp['as_file']  # type: ignore
         filename = tools.saveTempFile(theFile) # type: ignore
 
-        # # add to file the encrypted password for RDP
-        # import win32crypt
-        # import binascii
-
-        # def encrypt_password_rdp(plain_text_password):
-        #     # Convert password to UTF-16-LE (Unicode string used by RDP)
-        #     data = plain_text_password.encode('utf-16-le')
-        #     # Encrypt with DPAPI (CryptProtectData)
-        #     encrypted_data = win32crypt.CryptProtectData(data, None, None, None, None, 0)
-        #     # Convert bytes to hexadecimal for RDP
-        #     encrypted_hex = binascii.hexlify(encrypted_data).decode('ascii')
-        #     return encrypted_hex
-
-        # filename_handle = open(filename, 'a') # type: ignore
-        # if sp.get('password', ''):  # type: ignore
-        #     encrypted_password = encrypt_password_rdp(sp["password"])
-        #     filename_handle.write(f'password 51:b:{encrypted_password}\n')  # type: ignore
-        # filename_handle.close()
-
         # add to file the password without encryption (Thincast will encrypt it)
         filename_handle = open(filename, 'a') # type: ignore
         if sp.get('password', ''):  # type: ignore

@@ -426,6 +426,11 @@ class Handler(abc.ABC):
         Returns:
             The sorted queryset.
         """
+        if not self.odata.orderby:
+            # Try to sort by primary if not alrady has another in ordering meta
+            # to have stable order
+            if not qs.model._meta.ordering:
+                return qs.order_by('pk')
         return qs.order_by(*self.odata.orderby)
 
     @typing.final

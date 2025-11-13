@@ -45,14 +45,12 @@ logger = logging.getLogger(__name__)
 
 
 def uds_link(request: 'HttpRequest', ticket: str, scrambler: str) -> str:
-    # Removed http support, so only udss:// links are generated
-
     # If we have a scheme, remove it
     rels = request.build_absolute_uri("/").split("://", maxsplit=1)
     rel = rels[1] if len(rels) > 1 else rels[0]
 
-    # Ensure that build_absolute_uri returns a valid url without scheme
-    return f'udss://{rel}{ticket}/{scrambler}'
+    # returns an uds link
+    return f'{consts.system.UDS_CLIENT_SCHEME}{rel}{ticket}/{scrambler}'
 
 
 def uds_access_link(

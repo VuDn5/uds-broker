@@ -73,6 +73,7 @@ DEFAULT_WAIT_TIME: typing.Final[int] = 8  # seconds
 
 # UDS Action url scheme
 UDS_ACTION_SCHEME: typing.Final[str] = 'udsa://'
+UDS_CLIENT_SCHEME: typing.Final[str] = 'udssv2://'
 
 # Max sequence number for generators
 MAX_SEQ: typing.Final[int] = 1000000000000000
@@ -80,3 +81,4 @@ MAX_SEQ: typing.Final[int] = 1000000000000000
 # Security related
 SECURITY_KEY_SIZE: typing.Final[int] = 4096
 SECURITY_SECRET_SIZE: typing.Final[int] = 32
+

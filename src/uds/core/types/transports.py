@@ -85,7 +85,7 @@ class ScriptType(enum.StrEnum):
 
 
 class SignatureAlgorithm(enum.StrEnum):
-    MLDSA65 = 'mldsa65'  # Post quantum safe algorithm
+    MLDSA65 = 'ML DSA 65'  # Post quantum safe algorithm
 
 
 @dataclasses.dataclass
@@ -130,7 +130,7 @@ class TransportScript:
             'script': self.encoded_script,
             'type': self.script_type,
             'signature_algorithm': self.signature_algorithm,
-            'signature_b64': self.signature_b64,
+            'signature': self.signature_b64,
             'params': self.encoded_parameters,
             'log': self.log.as_dict(),
         }
