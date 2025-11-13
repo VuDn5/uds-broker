@@ -48,7 +48,6 @@ class TestOpenshiftService(UDSTransactionTestCase):
         self.assertEqual(service.template.value, fixtures.SERVICE_VALUES_DICT['template'])
         self.assertEqual(service.basename.value, fixtures.SERVICE_VALUES_DICT['basename'])
         self.assertEqual(service.lenname.value, fixtures.SERVICE_VALUES_DICT['lenname'])
-        self.assertEqual(service.publication_timeout.value, fixtures.SERVICE_VALUES_DICT['publication_timeout'])
 
     def test_initialize_sets_basename(self) -> None:
         """

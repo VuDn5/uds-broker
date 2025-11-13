@@ -148,7 +148,6 @@ SERVICE_VALUES_DICT: gui.ValuesDictType = {
     'template': VMS[0].name,
     'basename': 'base',
     'lenname': 4,
-    'publication_timeout': 120,
     'prov_uuid': '',
 }
 
