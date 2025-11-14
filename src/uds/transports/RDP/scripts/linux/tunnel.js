@@ -1,11 +1,8 @@
 'use strict';
-
-// Info for lintering tools about the variables provided by uds client
-var Process, Logger, File, Utils, Tasks;
+import { Process, Tasks, Logger, File, Utils} from 'runtime';  
 
 // We receive data in "data" variable, which is an object from json readonly
 var data;
-
 
 const errorString = `You need to have xfreerdp or Thincast installed and in path for this to work.</p>
     <p>Please, install the proper package for your system.</p>
@@ -32,13 +29,14 @@ if (!executablePath) {
 // using Utils.expandVars, expand variables of data.freerdp_params (that is an array of strings)
 let parameters = data.freerdp_params.map((param) => Utils.expandVars(param));
 
-let tunnel = null;
-try {
-    tunnel = await Tasks.startTunnel(data.tunnel.host, data.tunel.port, data.tunnel.ticket, null, data.tunnel.options);
-} catch (error) {
-    Logger.error(`Failed to start tunnel: ${error.message}`);
-    throw new Error(`Failed to start tunnel: ${error.message}`);
-}
+// Raises an exception if tunnel cannot be started
+let tunnel = await Tasks.startTunnel(
+    data.tunnel.host,
+    data.tunel.port,
+    data.tunnel.ticket,
+    data.tunnel.verify_ssl,
+    data.tunel.wait
+);
 
 let process = null;
 

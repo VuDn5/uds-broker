@@ -1,7 +1,5 @@
 'use strict';
-
-// Info for lintering tools about the variables provided by uds client
-var Process, Logger, File, Utils, Tasks;
+import { Process, Tasks, Logger, File, Utils} from 'runtime';  
 
 // We receive data in "data" variable, which is an object from json readonly
 var data;

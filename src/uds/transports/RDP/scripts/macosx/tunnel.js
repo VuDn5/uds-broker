@@ -1,7 +1,5 @@
 'use strict';
-
-// Info for lintering tools about the variables provided by uds client
-var Process, Logger, File, Utils, Tasks;
+import { Process, Tasks, Logger, File, Utils} from 'runtime';  
 
 // We receive data in "data" variable, which is an object from json readonly
 var data;
@@ -104,6 +102,19 @@ for (let appPath of thincast_list) {
     }
 }
 
+if (!thincastExecutable && !xfreeRdpExecutable && !msrdExecutable) {
+    Logger.error('No RDP client found on system');
+    throw new Error(errorString.replace('{msrd}', msrd).replace('{msrd_li}', msrd_li));
+}
+
+let tunnel = await Tasks.startTunnel(
+    data.tunnel.host,
+    data.tunel.port,
+    data.tunnel.ticket,
+    data.tunnel.verify_ssl,
+    data.tunel.wait
+);
+
 let params = [];
 // First preference is thincast, then freerdp and then msrdc (if allowed)
 if (thincastExecutable || xfreeRdpExecutable) {
@@ -111,7 +122,8 @@ if (thincastExecutable || xfreeRdpExecutable) {
     Logger.info(`Using RDP client at ${executablePath}`);
     // We have thincast, if rdp file is provided, use it, but password goes in the command line
     if (data.as_file) {
-        let rdpFilePath = Utils.createTempFile('.rdp', data.as_file);
+        let content = data.as_file.replace(/\{address\}/g, `127.0.0.1:${tunnel.port}`);
+        let rdpFilePath = Utils.createTempFile('.rdp', content);
         let password = data.password ? `/p:${data.password}` : '/p:';
         params = ['-a', executablePath, rdpFilePath, password];
         Tasks.addEarlyUnlinkableFile(rdpFilePath);
@@ -119,7 +131,7 @@ if (thincastExecutable || xfreeRdpExecutable) {
         params = [
             '-a',
             executablePath,
-            `/v:${data.address}`,
+            `/v:127.0.0.1:${tunnel.port}`,
             ...[await fixSizeParameter(data.freerdp_params.map((param) => Utils.expandVars(param)))],
         ];
     }
@@ -129,9 +141,6 @@ if (thincastExecutable || xfreeRdpExecutable) {
     let rdpContent = Utils.createTempFile('.rdp', data.as_file);
     params = [msrdExecutable, rdpContent];
     Tasks.addEarlyUnlinkableFile(rdpContent);
-} else {
-    Logger.error('No RDP client found on system');
-    throw new Error(errorString.replace('{msrd}', msrd).replace('{msrd_li}', msrd_li));
 }
 
 let process = Process.launch('open', params);

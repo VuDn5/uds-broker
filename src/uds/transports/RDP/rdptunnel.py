@@ -191,14 +191,15 @@ class TRDPTransport(BaseRDPTransport):
             r.domain = 'UDS'  # Fake in fact for SSO, but needed so xfreerdp3 do not ask for domain
 
         sp: collections.abc.MutableMapping[str, typing.Any] = {
-            'tunHost': tunnel_host,
-            'tunPort': tunnel_port,
-            'tunWait': self.tunnel_wait.as_int(),
-            'tunChk': self.verify_certificate.as_bool(),
-            'ticket': ticket,
+            'tunnel': {
+                'host': tunnel_host,
+                'port': tunnel_port,
+                'ticket': ticket,
+                'wait': self.tunnel_wait.as_int(),
+                'verify_ssl': self.verify_certificate.as_bool(),
+            },
             'password': ci.password,
             'this_server': request.build_absolute_uri('/'),
-            'tunnel_key': key,
         }
 
         if os.os == types.os.KnownOS.WINDOWS:

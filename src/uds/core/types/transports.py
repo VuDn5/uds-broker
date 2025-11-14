@@ -85,7 +85,7 @@ class ScriptType(enum.StrEnum):
 
 
 class SignatureAlgorithm(enum.StrEnum):
-    MLDSA65 = 'ML DSA 65'  # Post quantum safe algorithm
+    MLDSA65 = 'MLDSA65'  # Post quantum safe algorithm
 
 
 @dataclasses.dataclass
