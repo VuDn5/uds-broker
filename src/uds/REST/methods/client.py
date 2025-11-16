@@ -64,7 +64,7 @@ class Client(Handler):
     def result(
         result: typing.Any = None,
         error: typing.Optional[typing.Union[str, int]] = None,
-        error_code: int = 0,
+        percent: int = 0,
         is_retrayable: bool = False,
     ) -> dict[str, typing.Any]:
         """
@@ -79,23 +79,20 @@ class Client(Handler):
         Returns:
             A dictionary, suitable for REST response
         """
-        result = result if result is not None else ''
-        res = {'result': result}
+        res: dict[str, typing.Any] = {}
+        if result:
+            res['result'] = result
         if error:
             if isinstance(error, int):
                 error = types.errors.Error.from_int(error).message
-            # error = str(error)  # Ensures error is an string
-            if error_code != 0:
-                # Reformat error so it is better understood by users
-                # error += ' (code {0:04X})'.format(errorCode)
-                error = (
-                    _('Your service is being created. Please, wait while we complete it')
-                    + f' ({int(error_code)*25}%)'
-                )
 
-            res['error'] = error
-            # is_retrayable is new key, but we keep retryable for compatibility
-            res['is_retryable'] = res['retryable'] = '1' if is_retrayable else '0'
+            # Error code is percentage of creation of user service (0..4)
+
+            res['error'] = {
+                'message': error,
+                'is_retryable': is_retrayable,
+                'percent': percent,  # 0..4, meaning 0, 25, 50, 75, 100% of completion
+            }
 
         logger.debug('Client Result: %s', res)
 
@@ -191,7 +188,7 @@ class Client(Handler):
             # Refresh ticket and make this retrayable
             TicketStore.revalidate(ticket, 20)  # Retry will be in at most 5 seconds, so 20 is fine :)
             return Client.result(
-                error=types.errors.Error.SERVICE_IN_PREPARATION, error_code=e.code, is_retrayable=True
+                error=types.errors.Error.SERVICE_IN_PREPARATION, percent=e.code*25, is_retrayable=True
             )
         except Exception as e:
             logger.exception("Exception")

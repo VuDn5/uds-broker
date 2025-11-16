@@ -1,8 +1,5 @@
 'use strict';
-import { Process, Tasks, Logger, File, Utils} from 'runtime';  
-
-// We receive data in "data" variable, which is an object from json readonly
-var data;
+import { Process, Tasks, Logger, File, Utils } from 'runtime';
 
 // Try, in order of preference, to find other RDP clients
 const mstscPath = Process.findExecutable('mstsc.exe', ['C:\\Windows\\System32', 'C:\\Windows\\SysWOW64']);
@@ -15,7 +12,8 @@ if (!mstscPath) {
 const password = Utils.cryptProtectData(data.password);
 Utils.writeHkcuDword('Software\\Microsoft\\Terminal Server Client\\LocalDevices', data.ip, 255); // Register to allow redirection
 let content = data.as_file.replace(/\{password\}/g, password);
-rdpFilePath = Utils.createTempFile(content, null, '.rdp');
+let rdpFilePath = File.createTempFile(null, content, '.rdp');
 let process = Process.launch(mstscPath, [rdpFilePath]);
 Tasks.addEarlyUnlinkableFile(rdpFilePath);
 Tasks.addWaitableApp(process);
+Logger.info(`Launched RDP client with file ${rdpFilePath}`);

@@ -2,7 +2,6 @@
 import { Process, Tasks, Logger, File, Utils} from 'runtime';  
 
 // We receive data in "data" variable, which is an object from json readonly
-var data;
 
 async function fixSizeParameter(param) {
     // fix resolution parameters (as this needs to be a windows, calc the size)

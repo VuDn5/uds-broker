@@ -1,9 +1,6 @@
 'use strict';
 import { Process, Tasks, Logger, File, Utils} from 'runtime';  
 
-// We receive data in "data" variable, which is an object from json readonly
-var data;
-
 // Try, in order of preference, to find other RDP clients
 const mstscPath = Process.findExecutable('mstsc.exe', ['C:\\Windows\\System32', 'C:\\Windows\\SysWOW64']);
 
@@ -30,3 +27,4 @@ rdpFilePath = Utils.createTempFile(null, content, '.rdp');
 let process = Process.launch(mstscPath, [rdpFilePath]);
 Tasks.addEarlyUnlinkableFile(rdpFilePath);
 Tasks.addWaitableApp(process);
+

@@ -180,10 +180,6 @@ class ServicesPools(ModelHandler[ServicePoolItem]):
     )
 
     def apply_sort(self, qs: 'QuerySet[typing.Any]') -> 'list[typing.Any] | QuerySet[typing.Any]':
-        if field_info := self.get_sort_field_info('state'):
-            field_name, is_descending = field_info
-            order_by_field = f"-{field_name}" if is_descending else field_name
-            return qs.order_by(order_by_field)
         if field_info := self.get_sort_field_info('user_services_count'):
             # Annotate the count
             qs = qs.annotate(

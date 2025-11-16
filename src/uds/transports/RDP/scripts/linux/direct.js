@@ -3,8 +3,6 @@ import { Process, Tasks, Logger, File, Utils} from 'runtime';
 
 
 // We receive data in "data" variable, which is an object from json readonly
-var data;
-
 
 const errorString = `You need to have xfreerdp or Thincast installed and in path for this to work.</p>
     <p>Please, install the proper package for your system.</p>
