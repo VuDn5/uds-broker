@@ -100,7 +100,7 @@ class Providers(ModelHandler[ProviderItem]):
         .text_column(name='tags', title=_('Tags'), visible=False)
         .row_style(prefix='row-maintenance-', field='maintenance_mode')
         .with_field_mappings(type_name='data_type')
-        .with_filter_fields('name', 'data_type', 'comments', 'maintenance_mode')
+        .with_filter_fields('name', 'data_type', 'comments', 'services_count','maintenance_mode')
     ).build()
 
     # Rest api related information to complete the auto-generated API
@@ -113,7 +113,14 @@ class Providers(ModelHandler[ProviderItem]):
             field_name, is_descending = field_info
             order_by_field = f"-{field_name}" if is_descending else field_name
             return qs.annotate(services_count=Count('services')).order_by(order_by_field)
-
+        
+        if field_info := self.get_sort_field_info('user_services_count'):
+            field_name, is_descending = field_info
+            order_by_field = f"-{field_name}" if is_descending else field_name
+            return qs.annotate(
+                user_services_count=Count('maintenance_mode')
+            ).order_by(order_by_field)
+        
         return super().apply_sort(qs)
 
     def get_item(self, item: 'Model') -> ProviderItem:

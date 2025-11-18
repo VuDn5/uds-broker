@@ -752,9 +752,21 @@ class GlobalConfig:
     )
 
     # Admin config variables
+    ADMIN_IDLE_TIMEOUT: Config.Value = Config.section(Config.SectionType.ADMIN).value(
+        'Idle time before auto reload',
+        '0',
+        type=Config.FieldType.NUMERIC,
+        help=_('Time in seconds of inactivity before auto reloading admin pages'),
+    )
+    ADMIN_AUTO_RELOAD_INTERVAL: Config.Value = Config.section(Config.SectionType.ADMIN).value(
+        'Auto reload interval',
+        '0',
+        type=Config.FieldType.NUMERIC,
+        help=_('Time in seconds between auto reloads of admin pages'),
+    )
     ADMIN_PAGESIZE: Config.Value = Config.section(Config.SectionType.ADMIN).value(
         'List page size',
-        '10',
+        '0',
         type=Config.FieldType.NUMERIC,
         help=_('Number of items per page in admin tables'),
     )
