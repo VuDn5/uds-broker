@@ -161,6 +161,8 @@ def mfa(
                         consts.auth.MFA_COOKIE_NAME,
                         mfa_cookie,
                         max_age=mfa_provider.remember_device * 60 * 60,
+                        httponly=config.GlobalConfig.ENHANCED_SECURITY.as_bool(),
+                        secure=True if config.GlobalConfig.ENHANCED_SECURITY.as_bool() else False,
                     )
 
                 return response
