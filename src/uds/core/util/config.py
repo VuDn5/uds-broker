@@ -175,10 +175,21 @@ class Config:
                 # Not found, so we create it
                 self.set(self._default)
                 self._data = self._default
-            except Exception as e:  # On migration, this could happen
+            except Exception as e: # On migration, this could happen
                 logger.info('Error accessing db config %s.%s: %s', self._section.name(), self._key, e)
                 # logger.exception(e)
                 self._data = self._default
+
+            # Validation for ADMIN_PAGESIZE: never return or use values ​​less than 5
+            if self._section.name() == 'Admin' and self._key == 'List page size':
+                try:
+                    v = int(self._data)
+                except Exception:
+                    v = int(self._default)
+                if v < 5:
+                    # Correct the value in the database if necessary
+                    self.set(5)
+                    self._data = '5'
 
             return self._data
 
@@ -220,7 +231,7 @@ class Config:
 
         def get_type(self) -> int:
             return self._type
-        
+
         @property
         def is_password(self) -> bool:
             return self._type == Config.FieldType.PASSWORD
@@ -232,6 +243,15 @@ class Config:
             return gettext(self._help)
 
         def set(self, value: typing.Union[str, bool, int]) -> None:
+            # Validación para ADMIN_PAGESIZE: no permitir guardar si es menor de 5
+            if self._section.name() == 'Admin' and self._key == 'List page size':
+                try:
+                    v = int(value)
+                except Exception:
+                    v = int(self._default)
+                if v < 5:
+                    raise ValueError('List page size cannot be less than 5')
+
             if GlobalConfig.is_initialized() is False or Config._is_migrating is True:
                 Config._for_saving_later.append((self, value))
                 return
@@ -308,7 +328,9 @@ class Config:
                 yield val
 
     @staticmethod
-    def update(section: 'Config.SectionType', key: str, value: str, check_type: bool = False) -> 'None|Config.Value':
+    def update(
+        section: 'Config.SectionType', key: str, value: str, check_type: bool = False
+    ) -> 'None|Config.Value':
         # If cfg value does not exists, simply ignore request
         try:
             cfg: DBConfig = DBConfig.objects.get(section=section, key=key)
@@ -482,7 +504,7 @@ class GlobalConfig:
         type=Config.FieldType.NUMERIC,
         help=_('How long should the user service be unused before os manager considers it for removal'),
     )  # Defaults to 10 minutes
-    
+
     # Default CSS Used: REMOVED! (keep the for for naw, for reference, but will be cleaned on future...)
     # CSS: Config.Value = Config.section(Config.SectionType.GLOBAL).value('css', settings.STATIC_URL + 'css/uds.css', type=Config.FieldType.TEXT_FIELD)
     # Max logins before blocking an account
@@ -766,7 +788,7 @@ class GlobalConfig:
     )
     ADMIN_PAGESIZE: Config.Value = Config.section(Config.SectionType.ADMIN).value(
         'List page size',
-        '0',
+        '10',
         type=Config.FieldType.NUMERIC,
         help=_('Number of items per page in admin tables'),
     )
@@ -783,12 +805,9 @@ class GlobalConfig:
         help=_('Enable VNC menu for user services'),
     )
     NOTIFY_CALLBACK_URL: Config.Value = Config.section(Config.SectionType.GLOBAL).value(
-        'notifyCallbackURL',
-        '',
-        type=Config.FieldType.HIDDEN,
-        help=''
+        'notifyCallbackURL', '', type=Config.FieldType.HIDDEN, help=''
     )
-    
+
     # Cookies consent
     COOKIES_CONSENT_TEXT: Config.Value = Config.section(Config.SectionType.CUSTOM).value(
         'Cookies consent text',
@@ -814,7 +833,6 @@ class GlobalConfig:
         type=Config.FieldType.TEXT,
         help=_('URL to leave cookies consent'),
     )
-        
 
     @staticmethod
     def is_initialized() -> bool:
