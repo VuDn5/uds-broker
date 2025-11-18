@@ -200,7 +200,11 @@ def get_services_info_dict(
 
         # Get first member with custom message visible and enabled for metapools
         for member in sorted_members:
-            if member.pool.display_custom_message and member.pool.visible and member.pool.custom_message.strip():
+            if (
+                member.pool.display_custom_message
+                and member.pool.visible
+                and member.pool.custom_message.strip()
+            ):
                 custom_message = member.pool.custom_message
                 break
 
@@ -221,10 +225,14 @@ def get_services_info_dict(
             reducer: collections.abc.Callable[[set[Transport], set[Transport]], set[Transport]] = (
                 lambda x, y: x & y
             )
-            transports_in_all_pools: collections.abc.Iterable[Transport] = reduce(
-                reducer,
-                [{t for t in _valid_transports(member)} for member in sorted_members],
-            ) if len(sorted_members) > 0 else []
+            transports_in_all_pools: collections.abc.Iterable[Transport] = (
+                reduce(
+                    reducer,
+                    [{t for t in _valid_transports(member)} for member in sorted_members],
+                )
+                if len(sorted_members) > 0
+                else []
+            )
             transports_in_meta = _build_transports_for_meta(
                 transports_in_all_pools,
                 is_by_label=False,
@@ -392,7 +400,11 @@ def get_services_info_dict(
                 to_be_replaced_text=replace_date_info_text,
                 custom_calendar_text=service_pool.calendar_message,
                 # Only add custom message if it's enabled and has a message
-                custom_message_text=service_pool.custom_message if service_pool.display_custom_message and service_pool.custom_message.strip() else None,
+                custom_message_text=(
+                    service_pool.custom_message
+                    if service_pool.display_custom_message and service_pool.custom_message.strip()
+                    else None
+                ),
             )
         )
 
@@ -450,9 +462,7 @@ def enable_service(
                 'password': password,
             }
 
-            # Ensure that old clients will work with us
-            # On a future, we will remove legacy_ticket_length
-            ticket = TicketStore.create(data, legacy_ticket_length=True)
+            ticket = TicketStore.create(data)
             url = html.uds_link(request, ticket, scrambler)
     except ServiceNotReadyError as e:
         logger.debug('Service not ready')

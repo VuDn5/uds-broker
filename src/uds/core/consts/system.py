@@ -39,10 +39,10 @@ if typing.TYPE_CHECKING:
     pass
 
 # UDS Version related
-VERSION: typing.Final[str] = '4.0.0'
+VERSION: typing.Final[str] = '5.0.0'
 VERSION_STAMP: typing.Final[str] = f'{time.strftime("%Y%m%d")}-devel'
 # Minimal uds client version required to connect to this server
-VERSION_REQUIRED_CLIENT: typing.Final[str] = '3.6.0'
+VERSION_REQUIRED_CLIENT: typing.Final[str] = '5.0.0'
 
 # Max size of a rest request body
 MAX_REQUEST_SIZE: typing.Final[int] = int(

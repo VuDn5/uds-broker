@@ -91,7 +91,7 @@ class Client(Handler):
             res['error'] = {
                 'message': error,
                 'is_retryable': is_retrayable,
-                'percent': percent,  # 0..4, meaning 0, 25, 50, 75, 100% of completion
+                'percent': percent,
             }
 
         logger.debug('Client Result: %s', res)
@@ -126,7 +126,7 @@ class Client(Handler):
         )
 
         try:
-            data: dict[str, typing.Any] = TicketStore.get(ticket)
+            data: dict[str, typing.Any] = TicketStore.get(ticket, invalidate=False)  # TODO: for testing, remove asap
         except TicketStore.DoesNotExist:
             return Client.result(error=types.errors.Error.ACCESS_DENIED)
 
@@ -186,7 +186,7 @@ class Client(Handler):
             return Client.result(result=transport_script.as_dict())
         except ServiceNotReadyError as e:
             # Refresh ticket and make this retrayable
-            TicketStore.revalidate(ticket, 20)  # Retry will be in at most 5 seconds, so 20 is fine :)
+            # TODO: restore TicketStore.revalidate(ticket, 20)  # Retry will be in at most 5 seconds, so 20 is fine :)
             return Client.result(
                 error=types.errors.Error.SERVICE_IN_PREPARATION, percent=e.code*25, is_retrayable=True
             )

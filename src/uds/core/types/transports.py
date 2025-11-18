@@ -116,7 +116,7 @@ class TransportScript:
         """
         Returns encoded parameters for transport script
         """
-        return codecs.encode(codecs.encode(json.dumps(self.parameters).encode(), 'bz2'), 'base64').decode()
+        return codecs.encode(codecs.encode(json.dumps(self.parameters).encode(), 'bz2'), 'base64').decode().replace('\n', '')
 
     @property
     def encoded_script(self) -> str:
