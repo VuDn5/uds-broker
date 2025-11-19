@@ -1,5 +1,5 @@
 'use strict';
-import { Process, Tasks, Logger, File, Utils} from 'runtime';  
+import { Process, Tasks, Logger, File, Utils } from 'runtime';
 
 // We receive data in "data" variable, which is an object from json readonly
 
@@ -30,27 +30,18 @@ async function fixSizeParameter(param) {
 let msrd = '';
 let msrd_li = '';
 // Note, not using interpolation, replacing later
-const errorString = `<p><b>xfreerdp{msrd} or thincast client not found</b></p>
-        <p>In order to connect to UDS RDP Sessions, you need to have a<p>
-        <ul>
-            <li>
-                <p><b>Xfreerdp</b> from homebrew</p>
-                <p>
-                    <ul>
-                        <li>Install brew (from <a href="https://brew.sh">brew website</a>)</li>
-                        <li>Install xquartz<br/>
-                            <b>brew install --cask xquartz</b></li>
-                        <li>Install freerdp<br/>
-                            <b>brew install freerdp</b></li>
-                        <li>Reboot so xquartz will be automatically started when needed</li>
-                    </ul>
-                </p>
-            </li>
-            {msrd_li}
-            <li>
-                <p>ThinCast Remote Desktop Client (from <a href="https://thincast.com/en/products/client">thincast website</a>)</p>
-            </li>
-        </ul>`;
+const errorString = `xfreerdp{msrd} or thincast client not found
+In order to connect to UDS RDP Sessions, you need to have a
+* Xfreerdp from homebrew
+  https://brew.sh|Install brew
+  Install xquartz
+    brew install --cask xquartz
+  Install freerdp
+    brew install freerdp
+* ThinCast Remote Desktop Client
+https://thincast.com/en/products/client|Download from here
+{msrd_li}
+`;
 
 const msrdc_list = [
     '/Applications/Microsoft Remote Desktop.app',
@@ -71,14 +62,7 @@ let msrdExecutable = null;
 if (data.allow_msrdc) {
     // Will always have data.as_file also
     msrd = ' or Microsoft Remote Desktop';
-    msrd_li = `<li>
-            <p><b>Microsoft Remote Desktop</b> from App Store</p>
-            <p>
-                <ul>
-                    <li>Install from <a href="https://apps.apple.com/us/app/microsoft-remote-desktop/id1295203466?mt=12">App Store</a></li>
-                </ul>
-            </p>
-        </li>`;
+    msrd_li = `* Microsoft Remote Desktop</b> from App Store`;
     for (let appPath of msrdc_list) {
         if (File.isDirectory(appPath)) {
             msrdExecutable = appPath;
@@ -86,17 +70,17 @@ if (data.allow_msrdc) {
         }
     }
 }
-let xfreeRdpExecutable = null;
-for (let executable of xfreerdp_list) {
-    if (Process.findExecutable(executable)) {
-        xfreeRdpExecutable = executable;
-        break;
-    }
-}
 let thincastExecutable = null;
 for (let appPath of thincast_list) {
     if (File.isDirectory(appPath)) {
         thincastExecutable = appPath;
+        break;
+    }
+}
+let xfreeRdpExecutable = null;
+for (let executable of xfreerdp_list) {
+    if (Process.findExecutable(executable)) {
+        xfreeRdpExecutable = executable;
         break;
     }
 }
@@ -108,10 +92,10 @@ if (!thincastExecutable && !xfreeRdpExecutable && !msrdExecutable) {
 
 let tunnel = await Tasks.startTunnel(
     data.tunnel.host,
-    data.tunel.port,
+    data.tunnel.port,
     data.tunnel.ticket,
+    data.tunnel.timeout,
     data.tunnel.verify_ssl,
-    data.tunel.wait
 );
 
 let params = [];
@@ -122,7 +106,7 @@ if (thincastExecutable || xfreeRdpExecutable) {
     // We have thincast, if rdp file is provided, use it, but password goes in the command line
     if (data.as_file) {
         let content = data.as_file.replace(/\{address\}/g, `127.0.0.1:${tunnel.port}`);
-        let rdpFilePath = Utils.createTempFile('.rdp', content);
+        let rdpFilePath = File.createTempFile('.rdp', content);
         let password = data.password ? `/p:${data.password}` : '/p:';
         params = ['-a', executablePath, rdpFilePath, password];
         Tasks.addEarlyUnlinkableFile(rdpFilePath);
@@ -137,7 +121,7 @@ if (thincastExecutable || xfreeRdpExecutable) {
 } else if (msrdExecutable) {
     // We have msrdc
     // We need to create a temp rdp file with the parameters inside
-    let rdpContent = Utils.createTempFile('.rdp', data.as_file);
+    let rdpContent = File.createTempFile('.rdp', data.as_file);
     params = [msrdExecutable, rdpContent];
     Tasks.addEarlyUnlinkableFile(rdpContent);
 }

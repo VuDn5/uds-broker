@@ -108,7 +108,7 @@ if (thincastExecutable || xfreeRdpExecutable) {
     Logger.info(`Using RDP client at ${executablePath}`);
     // We have thincast, if rdp file is provided, use it, but password goes in the command line
     if (data.as_file) {
-        let rdpFilePath = Utils.createTempFile('.rdp', data.as_file);
+        let rdpFilePath = File.createTempFile('.rdp', data.as_file);
         let password = data.password ? `/p:${data.password}` : '/p:';
         params = ['-a', executablePath, rdpFilePath, password];
         Tasks.addEarlyUnlinkableFile(rdpFilePath);
@@ -123,7 +123,7 @@ if (thincastExecutable || xfreeRdpExecutable) {
 } else if (msrdExecutable) {
     // We have msrdc
     // We need to create a temp rdp file with the parameters inside
-    let rdpContent = Utils.createTempFile('.rdp', data.as_file);
+    let rdpContent = File.createTempFile('.rdp', data.as_file);
     params = [msrdExecutable, rdpContent];
     Tasks.addEarlyUnlinkableFile(rdpContent);
 } else {
