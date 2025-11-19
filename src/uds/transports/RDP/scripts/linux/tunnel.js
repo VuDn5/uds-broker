@@ -31,10 +31,10 @@ let parameters = data.freerdp_params.map((param) => Utils.expandVars(param));
 // Raises an exception if tunnel cannot be started
 let tunnel = await Tasks.startTunnel(
     data.tunnel.host,
-    data.tunel.port,
+    data.tunnel.port,
     data.tunnel.ticket,
+    data.tunnel.timeout,
     data.tunnel.verify_ssl,
-    data.tunel.wait
 );
 
 let process = null;
