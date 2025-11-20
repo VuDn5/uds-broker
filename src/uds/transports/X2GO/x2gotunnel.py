@@ -143,7 +143,7 @@ class TX2GOTransport(BaseX2GOTransport):
         sp = {
             'tunHost': tunnel_host,
             'tunPort': tunnel_port,
-            'tunWait': self.startup_time.as_int(),
+            'tunWait': self.startup_time.as_int() * 1000,  # In milliseconds
             'tunChk': self.verify_certificate.as_bool(),
             'ticket': ticket,
             'key': private_key,

@@ -163,7 +163,7 @@ class TSPICETransport(BaseSpiceTransport):
             'as_file_ns': r.as_file_ns,
             'tunHost': tunnel_host,
             'tunPort': tunnel_port,
-            'tunWait': self.startup_time.as_int(),
+            'tunWait': self.startup_time.as_int() * 1000,  # In milliseconds
             'tunChk': self.verify_certificate.as_bool(),
             'ticket': ticket,
             'ticket_secure': ticket_secure,
