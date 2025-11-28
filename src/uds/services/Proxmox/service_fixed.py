@@ -93,7 +93,7 @@ class ProxmoxServiceFixed(FixedService):  # pylint: disable=too-many-public-meth
 
     machines = FixedService.machines
     use_snapshots = FixedService.use_snapshots
-    
+
     maintain_on_error = FixedService.maintain_on_error
 
     prov_uuid = gui.HiddenField(value=None)
@@ -115,12 +115,15 @@ class ProxmoxServiceFixed(FixedService):  # pylint: disable=too-many-public-meth
     def provider(self) -> 'ProxmoxProvider':
         return typing.cast('ProxmoxProvider', super().provider())
 
+    def get_console_connection(self, vmid: str) -> typing.Optional[types.services.ConsoleConnectionInfo]:
+        return self.provider().api.get_console_connection(int(vmid))
+
     def is_avaliable(self) -> bool:
         return self.provider().is_available()
 
     def get_vm_info(self, vmid: int) -> 'prox_types.VMInfo':
         return self.provider().api.get_vm_info(vmid).validate()
-    
+
     def is_ready(self, vmid: str) -> bool:
         return self.provider().api.get_vm_info(int(vmid)).validate().status.is_running()
 
@@ -129,7 +132,9 @@ class ProxmoxServiceFixed(FixedService):  # pylint: disable=too-many-public-meth
         # Only machines that already exists on proxmox and are not already assigned
         vms: dict[int, str] = {}
 
-        for member in self.provider().api.get_pool_info(self.pool.value.strip(), retrieve_vm_names=True).members:
+        for member in (
+            self.provider().api.get_pool_info(self.pool.value.strip(), retrieve_vm_names=True).members
+        ):
             vms[member.vmid] = member.vmname
 
         with self._assigned_access() as assigned_vms:
@@ -180,7 +185,9 @@ class ProxmoxServiceFixed(FixedService):  # pylint: disable=too-many-public-meth
                         self.provider().api.restore_snapshot(vmid, name=snapshot.name)
                     )
             except Exception as e:
-                self.do_log(types.log.LogLevel.WARNING, 'Could not restore SNAPSHOT for this VM. ({})'.format(e))
+                self.do_log(
+                    types.log.LogLevel.WARNING, 'Could not restore SNAPSHOT for this VM. ({})'.format(e)
+                )
 
     def get_and_assign(self) -> str:
         found_vmid: typing.Optional[str] = None
