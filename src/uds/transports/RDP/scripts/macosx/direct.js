@@ -30,27 +30,19 @@ async function fixSizeParameter(param) {
 let msrd = '';
 let msrd_li = '';
 // Note, not using interpolation, replacing later
-const errorString = `<p><b>xfreerdp{msrd} or thincast client not found</b></p>
-        <p>In order to connect to UDS RDP Sessions, you need to have a<p>
-        <ul>
-            <li>
-                <p><b>Xfreerdp</b> from homebrew</p>
-                <p>
-                    <ul>
-                        <li>Install brew (from <a href="https://brew.sh">brew website</a>)</li>
-                        <li>Install xquartz<br/>
-                            <b>brew install --cask xquartz</b></li>
-                        <li>Install freerdp<br/>
-                            <b>brew install freerdp</b></li>
-                        <li>Reboot so xquartz will be automatically started when needed</li>
-                    </ul>
-                </p>
-            </li>
-            {msrd_li}
-            <li>
-                <p>ThinCast Remote Desktop Client (from <a href="https://thincast.com/en/products/client">thincast website</a>)</p>
-            </li>
-        </ul>`;
+// Note, not using interpolation, replacing later
+const errorString = `xfreerdp{msrd} or thincast client not found
+In order to connect to UDS RDP Sessions, you need to have a
+* Xfreerdp from homebrew
+  https://brew.sh|Install brew
+  Install xquartz
+    brew install --cask xquartz
+  Install freerdp
+    brew install freerdp
+* ThinCast Remote Desktop Client
+https://thincast.com/en/products/client|Download from here
+{msrd_li}
+`;
 
 const msrdc_list = [
     '/Applications/Microsoft Remote Desktop.app',
@@ -108,13 +100,12 @@ if (thincastExecutable || xfreeRdpExecutable) {
     Logger.info(`Using RDP client at ${executablePath}`);
     // We have thincast, if rdp file is provided, use it, but password goes in the command line
     if (data.as_file) {
-        let rdpFilePath = File.createTempFile('.rdp', data.as_file);
+        let rdpFilePath = File.createTempFile(File.getHomeDirectory(), data.as_file, 'rdp');
         let password = data.password ? `/p:${data.password}` : '/p:';
-        params = ['-a', executablePath, rdpFilePath, password];
+        params = [executablePath, '--args', rdpFilePath, password];
         Tasks.addEarlyUnlinkableFile(rdpFilePath);
     } else {
         params = [
-            '-a',
             executablePath,
             `/v:${data.address}`,
             ...[await fixSizeParameter(data.freerdp_params.map((param) => Utils.expandVars(param)))],
@@ -123,13 +114,14 @@ if (thincastExecutable || xfreeRdpExecutable) {
 } else if (msrdExecutable) {
     // We have msrdc
     // We need to create a temp rdp file with the parameters inside
-    let rdpContent = File.createTempFile('.rdp', data.as_file);
-    params = [msrdExecutable, rdpContent];
-    Tasks.addEarlyUnlinkableFile(rdpContent);
+    let rdpFilePath = File.createTempFile(File.getHomeDirectory(), data.as_file, 'rdp');
+    params = [msrdExecutable, '--args', rdpFilePath];
+    Tasks.addEarlyUnlinkableFile(rdpFilePath);
 } else {
     Logger.error('No RDP client found on system');
     throw new Error(errorString.replace('{msrd}', msrd).replace('{msrd_li}', msrd_li));
 }
 
-let process = Process.launch('open', params);
-Tasks.addWaitableApp(process);
+Logger.info(`Launching RDP client with params: ${params.join(' ')}`);
+// On MacOS, we do not need to wait for the app to end, just launch it
+Process.launch('/usr/bin/open', params);

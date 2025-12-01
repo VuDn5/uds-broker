@@ -94,7 +94,7 @@ let tunnel = await Tasks.startTunnel(
     data.tunnel.host,
     data.tunnel.port,
     data.tunnel.ticket,
-    data.tunnel.timeout,
+    data.tunnel.startup_time,
     data.tunnel.verify_ssl,
 );
 

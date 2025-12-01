@@ -37,7 +37,6 @@ import typing
 
 from uds.core import types
 from uds.core.services.generics.dynamic.userservice import DynamicUserService
-from uds.core.managers.userservice import UserServiceManager
 from uds.core.util import autoserializable
 import uds.services.Proxmox.proxmox.exceptions
 
@@ -204,22 +203,3 @@ class ProxmoxUserserviceLinked(DynamicUserService):
         self,
     ) -> typing.Optional[types.services.ConsoleConnectionInfo]:
         return self.service().get_console_connection(self._vmid)
-
-    def desktop_login(
-        self,
-        username: str,
-        password: str,
-        domain: str = '',
-    ) -> None:
-        script = (
-            'import sys\n'
-            'if sys.platform == "win32":\n'
-            'from uds import operations\n'
-            f'''operations.writeToPipe("\\\\.\\pipe\\VDSMDPipe", struct.pack('!IsIs', 1, '{username}'.encode('utf8'), 2, '{password}'.encode('utf8')), True)'''
-        )
-        # Post script to service
-        #         operations.writeToPipe("\\\\.\\pipe\\VDSMDPipe", packet, True)
-        try:
-            UserServiceManager.manager().send_script(self.db_obj(), script)
-        except Exception as e:
-            logger.info('Exception sending loggin to %s: %s', self.db_obj(), e)
