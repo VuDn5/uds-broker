@@ -154,17 +154,17 @@ def tunnel_ticket_validity_field(
 
 
 # Tunnel wait time (for uds client related tunnels)
-def tunnel_wait_time_field(
+def tunnel_startup_time_secs(
     order: int = 2, tab: 'types.ui.Tab|None' = types.ui.Tab.TUNNEL,default: int = 30
 ) -> ui.gui.NumericField:
     return ui.gui.NumericField(
         length=3,
-        label=_('Tunnel wait time'),
+        label=_('Startup wait time'),
         default=default,
         min_value=5,
-        max_value=3600 * 24,
+        max_value=180,
         order=order,
-        tooltip=_('Maximum time, in seconds, to wait before disable new connections on client tunnel listener'),
+        tooltip=_('Time, in seconds, to wait for first tunnel connection to be established.'),
         required=True,
         tab=tab,
         old_field_name='tunnelWait',

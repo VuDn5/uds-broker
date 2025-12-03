@@ -78,13 +78,13 @@ class ProxmoxUserServiceFixed(FixedUserService, autoserializable.AutoSerializabl
                 self.service().provider().api.reset_vm(int(self._vmid))
             except Exception:  # nosec: if cannot reset, ignore it
                 pass  # If could not reset, ignore it...
-            
+
         return types.states.TaskState.FINISHED
 
     def op_start(self) -> None:
         vminfo = self.service().get_vm_info(int(self._vmid)).validate()
 
-        if  not vminfo.status.is_running():
+        if not vminfo.status.is_running():
             self._store_task(self.service().provider().api.start_vm(int(self._vmid)))
 
     # Check methods
@@ -113,3 +113,8 @@ class ProxmoxUserServiceFixed(FixedUserService, autoserializable.AutoSerializabl
         Checks if machine has started
         """
         return self._check_task_finished()
+
+    def get_console_connection(
+        self,
+    ) -> typing.Optional[types.services.ConsoleConnectionInfo]:
+        return self.service().get_console_connection(self._vmid)

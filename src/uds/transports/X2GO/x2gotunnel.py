@@ -66,7 +66,7 @@ class TX2GOTransport(BaseX2GOTransport):
     group = types.transports.Grouping.TUNNELED
 
     tunnel = fields.tunnel_field()
-    tunnel_wait = fields.tunnel_wait_time_field()
+    startup_time = fields.tunnel_startup_time_secs()
 
     verify_certificate = gui.CheckBoxField(
         label=_('Force SSL certificate verification'),
@@ -133,7 +133,7 @@ class TX2GOTransport(BaseX2GOTransport):
         ticket = TicketStore.create_for_tunnel(
             userservice=userservice,
             port=22,
-            validity=self.tunnel_wait.as_int() + 60,  # Ticket overtime
+            validity=self.startup_time.as_int() + 60,  # Ticket overtime
             key=key,
         )
 
@@ -143,7 +143,7 @@ class TX2GOTransport(BaseX2GOTransport):
         sp = {
             'tunHost': tunnel_host,
             'tunPort': tunnel_port,
-            'tunWait': self.tunnel_wait.as_int(),
+            'tunWait': self.startup_time.as_int() * 1000,  # In milliseconds
             'tunChk': self.verify_certificate.as_bool(),
             'ticket': ticket,
             'key': private_key,

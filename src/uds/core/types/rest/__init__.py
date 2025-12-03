@@ -115,7 +115,14 @@ class ManagedObjectItem(BaseRestItem, typing.Generic[T_Model]):
         """
         Returns a dictionary representation of the managed object item.
         """
+        # Note: This should not be necessary, but on some python versions, dataclasses.asdict
+        #       seems to recurse infinitely on generic types, or do weird things with them. 
+        #       So we avoid it by temporarily removing the item.
+        tmp_item = self.item
+        self.item = typing.cast(T_Model, None)  # Avoid recursion on data
         base = super().as_dict()
+        self.item = tmp_item  # Restore
+
         # Remove the fields that are not needed in the dictionary
         base.pop('item')
         item = self.item.get_instance()

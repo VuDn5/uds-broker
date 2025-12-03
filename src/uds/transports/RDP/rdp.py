@@ -181,8 +181,8 @@ class RDPTransport(BaseRDPTransport):
                 r.custom_parameters = self.lnx_custom_parameters.value
             sp.update(
                 {
-                    'as_new_xfreerdp_params': r.as_new_xfreerdp_params,
                     'address': r.address,
+                    'freerdp_params': r.freerdp_params,
                     'as_file': r.as_file if self.lnx_use_rdp_file.as_bool() else '',
                 }
             )
@@ -193,10 +193,10 @@ class RDPTransport(BaseRDPTransport):
                 r.custom_parameters = self.mac_custom_parameters.value
             sp.update(
                 {
-                    'as_new_xfreerdp_params': r.as_new_xfreerdp_params,
+                    'address': r.address,
+                    'freerdp_params': r.freerdp_params,
                     'allow_msrdc': self.mac_allow_msrdc.as_bool(),
                     'as_file': r.as_file if self.mac_use_rdp_file.as_bool() else '',
-                    'address': r.address,
                 }
             )
         else:

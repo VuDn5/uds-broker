@@ -64,7 +64,7 @@ class TSPICETransport(BaseSpiceTransport):
     group = types.transports.Grouping.TUNNELED
 
     tunnel = fields.tunnel_field()
-    tunnel_wait = fields.tunnel_wait_time_field()
+    startup_time = fields.tunnel_startup_time_secs()
 
     verify_certificate = gui.CheckBoxField(
         label=_('Force SSL certificate verification'),
@@ -127,7 +127,7 @@ class TSPICETransport(BaseSpiceTransport):
             ticket = TicketStore.create_for_tunnel(
                 userservice=userservice,
                 port=int(con.port),
-                validity=self.tunnel_wait.as_int() + 60,  # Ticket overtime
+                validity=self.startup_time.as_int() + 60,  # Ticket overtime
                 key=key,
             )
 
@@ -136,7 +136,7 @@ class TSPICETransport(BaseSpiceTransport):
                 userservice=userservice,
                 port=int(con.secure_port),
                 host=con.address,
-                validity=self.tunnel_wait.as_int() + 60,  # Ticket overtime
+                validity=self.startup_time.as_int() + 60,  # Ticket overtime
                 key=key,
             )
 
@@ -163,7 +163,7 @@ class TSPICETransport(BaseSpiceTransport):
             'as_file_ns': r.as_file_ns,
             'tunHost': tunnel_host,
             'tunPort': tunnel_port,
-            'tunWait': self.tunnel_wait.as_int(),
+            'tunWait': self.startup_time.as_int() * 1000,  # In milliseconds
             'tunChk': self.verify_certificate.as_bool(),
             'ticket': ticket,
             'ticket_secure': ticket_secure,

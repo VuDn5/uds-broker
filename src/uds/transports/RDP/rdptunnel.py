@@ -69,7 +69,7 @@ class TRDPTransport(BaseRDPTransport):
 
     tunnel = fields.tunnel_field()
 
-    tunnel_wait = fields.tunnel_wait_time_field()
+    startup_time = fields.tunnel_startup_time_secs()
 
     verify_certificate = gui.CheckBoxField(
         label=_('Force SSL certificate verification'),
@@ -150,7 +150,7 @@ class TRDPTransport(BaseRDPTransport):
         ticket = TicketStore.create_for_tunnel(
             userservice=userservice,
             port=self.rdp_port.as_int(),
-            validity=self.tunnel_wait.as_int() + 60,  # Ticket overtime
+            validity=self.startup_time.as_int() + 60,  # Ticket overtime
             key=key,
         )
 
@@ -195,7 +195,7 @@ class TRDPTransport(BaseRDPTransport):
                 'host': tunnel_host,
                 'port': tunnel_port,
                 'ticket': ticket,
-                'timeout': self.tunnel_wait.as_int(),
+                'startup_time': self.startup_time.as_int() * 1000,  # In milliseconds
                 'verify_ssl': self.verify_certificate.as_bool(),
             },
             'password': ci.password,
@@ -218,7 +218,7 @@ class TRDPTransport(BaseRDPTransport):
                 r.custom_parameters = self.lnx_custom_parameters.value
             sp.update(
                 {
-                    'as_new_xfreerdp_params': r.as_new_xfreerdp_params,
+                    'freerdp_params': r.freerdp_params,
                     'as_file': r.as_file if self.lnx_use_rdp_file.as_bool() else '',
                 }
             )
@@ -229,7 +229,7 @@ class TRDPTransport(BaseRDPTransport):
                 r.custom_parameters = self.mac_custom_parameters.value
             sp.update(
                 {
-                    'as_new_xfreerdp_params': r.as_new_xfreerdp_params,
+                    'freerdp_params': r.freerdp_params,
                     'as_file': r.as_file if self.mac_use_rdp_file.as_bool() else '',
                     'as_rdp_url': r.as_rdp_url if self.mac_allow_msrdc.as_bool() else '',
                 }
