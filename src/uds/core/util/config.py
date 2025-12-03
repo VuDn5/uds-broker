@@ -175,7 +175,7 @@ class Config:
                 # Not found, so we create it
                 self.set(self._default)
                 self._data = self._default
-            except Exception as e:  # On migration, this could happen
+            except Exception as e: # On migration, this could happen
                 logger.info('Error accessing db config %s.%s: %s', self._section.name(), self._key, e)
                 # logger.exception(e)
                 self._data = self._default
@@ -766,7 +766,7 @@ class GlobalConfig:
     )
     ADMIN_PAGESIZE: Config.Value = Config.section(Config.SectionType.ADMIN).value(
         'List page size',
-        '0',
+        '10',
         type=Config.FieldType.NUMERIC,
         help=_('Number of items per page in admin tables'),
     )
