@@ -284,7 +284,7 @@ class OpenshiftClient:
         except exceptions.OpenshiftNotFoundError:
             return None
         except Exception as e:
-            logger.info(f"Error getting VM Instance {vm_name}: {e}")
+            logger.error(f"Error getting VM Instance {vm_name}: {e}")
             return None
 
     def monitor_vm_clone(
@@ -294,18 +294,18 @@ class OpenshiftClient:
         Monitor the clone process of a virtual machine.
         """
         path = f"/apis/clone.kubevirt.io/v1alpha1/namespaces/{namespace}/virtualmachineclones/{clone_name}"
-        logging.info("Monitoring clone process for '%s'...", clone_name)
+        logging.debug("Monitoring clone process for '%s'...", clone_name)
         while True:
             try:
                 response = self.do_request('GET', path)
                 status = response.get('status', {})
                 phase = status.get('phase', 'Unknown')
-                logging.info("Phase: %s", phase)
+                logging.debug("Phase: %s", phase)
                 for condition in status.get('conditions', []):
                     ctype = condition.get('type', '')
                     cstatus = condition.get('status', '')
                     cmsg = condition.get('message', '')
-                    logging.info("  %s: %s - %s", ctype, cstatus, cmsg)
+                    logging.debug("  %s: %s - %s", ctype, cstatus, cmsg)
                 if phase == 'Succeeded':
                     logging.info("Clone '%s' completed successfully!", clone_name)
                     break
@@ -317,7 +317,7 @@ class OpenshiftClient:
                 break
             except Exception as e:
                 logging.error("Monitoring exception: %s", e)
-            logging.info("Waiting %d seconds before next check...", polling_interval)
+            logging.debug("Waiting %d seconds before next check...", polling_interval)
             time.sleep(polling_interval)
 
     def get_vm_pvc_or_dv_name(self, api_url: str, namespace: str, vm_name: str) -> tuple[str, str]:
@@ -445,18 +445,26 @@ class OpenshiftClient:
             elif 'persistentVolumeClaim' in vol:
                 vol['persistentVolumeClaim']['claimName'] = new_dv_name
 
-        # Use the source PVC size for the new DataVolumeTemplate
+        # Use the source PVC size and volumeMode for the new DataVolumeTemplate
         pvc_size = self.get_pvc_size(api_url, namespace, source_pvc_name)
+        # Obtener el storageClassName y volumeMode del PVC fuente
+        path = f"/api/v1/namespaces/{namespace}/persistentvolumeclaims/{source_pvc_name}"
+        response = self.do_request('GET', path)
+        source_storage_class = response.get("spec", {}).get("storageClassName", None)
+        source_volume_mode = response.get("spec", {}).get("volumeMode", None)
+        pvc_spec = {
+            "accessModes": ["ReadWriteOnce"],
+            "resources": {"requests": {"storage": pvc_size}},
+            "storageClassName": source_storage_class,
+        }
+        if source_volume_mode:
+            pvc_spec["volumeMode"] = source_volume_mode
         vm_obj['spec']['dataVolumeTemplates'] = [
             {
                 "metadata": {"name": new_dv_name},
                 "spec": {
                     "source": {"pvc": {"name": source_pvc_name}},
-                    "pvc": {
-                        "accessModes": ["ReadWriteOnce"],
-                        "resources": {"requests": {"storage": pvc_size}},
-                        "storageClassName": "crc-csi-hostpath-provisioner",
-                    },
+                    "pvc": pvc_spec,
                 },
             }
         ]
@@ -513,7 +521,7 @@ class OpenshiftClient:
                 status = response.get('status', {})
                 phase = status.get('phase')
                 progress = status.get('progress', 'N/A')
-                logging.info(f"DataVolume {datavolume_name} status: {phase}, progress: {progress}")
+                logging.debug(f"DataVolume {datavolume_name} status: {phase}, progress: {progress}")
                 if phase == 'Succeeded':
                     logging.info(f"DataVolume {datavolume_name} clone completed")
                     return True

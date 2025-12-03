@@ -175,6 +175,7 @@ class OpenshiftService(DynamicService):
             return ''
         logger.debug('Getting MAC for VM ID: %s', vmid)
         vmi_info = self.api.get_vm_instance_info(vmid)
+        logger.debug(f"The vm info is:{vmi_info}")
         if not vmi_info or not vmi_info.interfaces:
             logger.warning(f'No interfaces found for VM {vmid}. Detalles: {vmi_info}')
             # Opcional: retornar None o string vacía según la lógica de negocio
