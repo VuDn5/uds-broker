@@ -33,6 +33,7 @@ import typing
 
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from django.conf import settings
 
 from uds import models
 from uds.core import consts, exceptions, types
@@ -126,7 +127,8 @@ class Client(Handler):
         )
 
         try:
-            data: dict[str, typing.Any] = TicketStore.get(ticket, invalidate=False)  # TODO: for testing, remove asap
+            # On debug, the tickets will not be invalidated (but will caduce in their validity time)
+            data: dict[str, typing.Any] = TicketStore.get(ticket, invalidate=False if settings.DEBUG else True)
         except TicketStore.DoesNotExist:
             return Client.result(error=types.errors.Error.ACCESS_DENIED)
 
