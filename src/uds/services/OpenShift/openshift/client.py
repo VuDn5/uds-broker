@@ -445,18 +445,26 @@ class OpenshiftClient:
             elif 'persistentVolumeClaim' in vol:
                 vol['persistentVolumeClaim']['claimName'] = new_dv_name
 
-        # Use the source PVC size for the new DataVolumeTemplate
+        # Use the source PVC size and volumeMode for the new DataVolumeTemplate
         pvc_size = self.get_pvc_size(api_url, namespace, source_pvc_name)
+        # Obtener el storageClassName y volumeMode del PVC fuente
+        path = f"/api/v1/namespaces/{namespace}/persistentvolumeclaims/{source_pvc_name}"
+        response = self.do_request('GET', path)
+        source_storage_class = response.get("spec", {}).get("storageClassName", None)
+        source_volume_mode = response.get("spec", {}).get("volumeMode", None)
+        pvc_spec = {
+            "accessModes": ["ReadWriteOnce"],
+            "resources": {"requests": {"storage": pvc_size}},
+            "storageClassName": source_storage_class,
+        }
+        if source_volume_mode:
+            pvc_spec["volumeMode"] = source_volume_mode
         vm_obj['spec']['dataVolumeTemplates'] = [
             {
                 "metadata": {"name": new_dv_name},
                 "spec": {
                     "source": {"pvc": {"name": source_pvc_name}},
-                    "pvc": {
-                        "accessModes": ["ReadWriteOnce"],
-                        "resources": {"requests": {"storage": pvc_size}},
-                        "storageClassName": "crc-csi-hostpath-provisioner",
-                    },
+                    "pvc": pvc_spec,
                 },
             }
         ]
