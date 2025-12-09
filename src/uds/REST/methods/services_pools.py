@@ -474,7 +474,7 @@ class ServicesPools(ModelHandler[ServicePoolItem]):
             )
             .add_checkbox(
                 name='show_transports',
-                default=False,
+                default=True,
                 label=gettext('Show transports'),
                 tooltip=gettext('If active, transports will be shown to users'),
             )
