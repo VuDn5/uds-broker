@@ -43,7 +43,9 @@ class OpenshiftProvider(ServiceProvider):
         order=1,
         length=128,
         label=_('Cluster OAuth URL'),
-        tooltip=_('Openshift OAuth URL, e.g. https://oauth-openshift.apps-crc.testing or https://console-openshift.apps-crc.testing'),
+        tooltip=_(
+            'Openshift OAuth URL, e.g. https://oauth-openshift.apps-crc.testing or https://console-openshift.apps-crc.testing'
+        ),
         required=True,
         default='',
     )
@@ -84,7 +86,7 @@ class OpenshiftProvider(ServiceProvider):
     concurrent_removal_limit = fields.concurrent_removal_limit_field()
     timeout = fields.timeout_field()
 
-    _cached_api: typing.Optional['client.OpenshiftClient'] = None # Cached API client
+    _cached_api: typing.Optional['client.OpenshiftClient'] = None  # Cached API client
 
     def initialize(self, values: 'core_types.core.ValuesType') -> None:
         # No port validation needed, URLs are used
@@ -121,7 +123,7 @@ class OpenshiftProvider(ServiceProvider):
             return core_types.core.TestResult(True, _('Connection works fine'))
 
         return core_types.core.TestResult(False, _('Connection failed. Check connection params'))
-    
+
     # Utility
     def sanitized_name(self, name: str) -> str:
         """

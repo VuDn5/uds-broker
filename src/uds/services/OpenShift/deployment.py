@@ -63,7 +63,7 @@ class OpenshiftUserService(DynamicUserService, autoserializable.AutoSerializable
         types.services.Operation.SUSPEND,
         types.services.Operation.FINISH,
     ]
-    
+
     def service(self) -> 'OpenshiftService':
         """
         Get the Openshift service.
@@ -99,7 +99,7 @@ class OpenshiftUserService(DynamicUserService, autoserializable.AutoSerializable
         logger.info(f"PVC size: {size}.")
 
         new_pvc_name = f"{self._name}-disk"
-        
+
         logger.info(f"Creating new VM '{self._name}' from cloned PVC '{new_pvc_name}'.")
         ok = api.create_vm_from_pvc(
             api_url=api_url,
@@ -142,10 +142,14 @@ class OpenshiftUserService(DynamicUserService, autoserializable.AutoSerializable
             # VM not found, consider it deleted and finish
             logger.info(f"VM '{self._name}' not found, considering as deleted. Finishing operation.")
             return types.states.TaskState.FINISHED
-        
+
         # Comprobar que la VM tiene interfaces y MAC address
         vmi = api.get_vm_instance_info(self._name)
-        if not vmi or not getattr(vmi, 'interfaces', None) or getattr(vmi.interfaces[0], 'mac_address', '') == '':
+        if (
+            not vmi
+            or not getattr(vmi, 'interfaces', None)
+            or getattr(vmi.interfaces[0], 'mac_address', '') == ''
+        ):
             return types.states.TaskState.RUNNING
         return types.states.TaskState.FINISHED
 
@@ -156,7 +160,9 @@ class OpenshiftUserService(DynamicUserService, autoserializable.AutoSerializable
         api = self.service().api
         vm = api.get_vm_info(self._name)
         if not vm:
-            logger.info(f"VM '{self._name}' not found during delete check, considering as deleted. Finishing operation.")
+            logger.info(
+                f"VM '{self._name}' not found during delete check, considering as deleted. Finishing operation."
+            )
             return types.states.TaskState.FINISHED
         return types.states.TaskState.RUNNING
 
@@ -173,7 +179,9 @@ class OpenshiftUserService(DynamicUserService, autoserializable.AutoSerializable
         api = self.service().api
         vm = api.get_vm_info(self._name)
         if not vm:
-            logger.info(f"VM '{self._name}' not found during cancel check, considering as canceled. Finishing operation.")
+            logger.info(
+                f"VM '{self._name}' not found during cancel check, considering as canceled. Finishing operation."
+            )
             return types.states.TaskState.FINISHED
         return types.states.TaskState.RUNNING
 

@@ -11,6 +11,7 @@ Author: Adolfo Gómez, dkmaster at dkmon dot com
 import logging
 import collections.abc
 import typing
+import time
 
 from django.utils.translation import gettext_lazy as _
 
@@ -71,8 +72,7 @@ class OpenshiftService(DynamicService):
 
     prov_uuid = gui.HiddenField(value=None)
 
-
-    _cached_api: typing.Optional['OpenshiftClient'] = None #! DUDA
+    _cached_api: typing.Optional['OpenshiftClient'] = None
 
     @property
     def api(self) -> 'OpenshiftClient':
@@ -116,7 +116,7 @@ class OpenshiftService(DynamicService):
     def get_lenname(self) -> int:
         """Returns configured length for machine names"""
         return self.lenname.as_int()
-    
+
     # Utility
     def sanitized_name(self, name: str) -> str:
         """Sanitizes a name for Azure (only allowed chars)
@@ -144,22 +144,28 @@ class OpenshiftService(DynamicService):
         return self.provider().is_available()
 
     def get_ip(
-        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str #! DUDA
+        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str
     ) -> str:
         """
         Returns the ip of the machine
         If cannot be obtained, MUST raise an exception
+        Tries up to 3 times with 5 seconds delay if not found.
         """
         logger.debug('Getting IP for VM ID: %s', vmid)
-
-        vmi_info = self.api.get_vm_instance_info(vmid)
-        if not vmi_info or not vmi_info.interfaces:
-            raise morph_exceptions.OpenshiftNotFoundError(f'No interfaces found for VM {vmid}')
-        return vmi_info.interfaces[0].ip_address
+        for attempt in range(3):
+            vmi_info = self.api.get_vm_instance_info(vmid)
+            if vmi_info and vmi_info.interfaces:
+                logger.info(f"IP address found: {vmi_info.interfaces[0].ip_address}")
+                return vmi_info.interfaces[0].ip_address
+            logger.warning(
+                f'Attempt {attempt+1}/3: No interfaces found for VM {vmid} yet. Retrying in 5 seconds...'
+            )
+            time.sleep(5)
+        raise morph_exceptions.OpenshiftNotFoundError(f'No interfaces found for VM {vmid}')
 
     def get_mac(
         self,
-        caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], #! DUDA
+        caller_instance: typing.Optional['DynamicUserService | DynamicPublication'],
         vmid: str,
         *,
         for_unique_id: bool = False,
@@ -170,21 +176,25 @@ class OpenshiftService(DynamicService):
         Note:
            vmid can be '' if we are requesting a new mac (on some services, where UDS generate the machines MAC)
            If the service does not support this, it can raise an exception
+        Tries up to 3 times with 5 seconds delay if not found.
         """
         if vmid == '':
             return ''
         logger.debug('Getting MAC for VM ID: %s', vmid)
-        vmi_info = self.api.get_vm_instance_info(vmid)
-        logger.debug(f"The vm info is:{vmi_info}")
-        if not vmi_info or not vmi_info.interfaces:
-            logger.warning(f'No interfaces found for VM {vmid}. Detalles: {vmi_info}')
-            # Opcional: retornar None o string vacía según la lógica de negocio
-            # return None
-            raise morph_exceptions.OpenshiftNotFoundError(f'No interfaces found for VM {vmid}')
-        return vmi_info.interfaces[0].mac_address
+        for attempt in range(3):
+            vmi_info = self.api.get_vm_instance_info(vmid)
+            logger.debug(f"The vm info is:{vmi_info}")
+            if vmi_info and vmi_info.interfaces:
+                logger.info(f"MAC address found: {vmi_info.interfaces[0].mac_address}")
+                return vmi_info.interfaces[0].mac_address
+            logger.warning(
+                f'Attempt {attempt+1}/3: No interfaces found for VM {vmid} yet. Details: {vmi_info}. Retrying in 5 seconds...'
+            )
+            time.sleep(5)
+        raise morph_exceptions.OpenshiftNotFoundError(f'No interfaces found for VM {vmid}')
 
     def is_running(
-        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str #! DUDA
+        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str
     ) -> bool:
         """
         Checks if the VM instance is currently running.
@@ -199,7 +209,7 @@ class OpenshiftService(DynamicService):
         )
 
     def start(
-        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str #! DUDA
+        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str
     ) -> None:
         """
         Starts the machine
@@ -208,7 +218,7 @@ class OpenshiftService(DynamicService):
         self.api.start_vm_instance(vmid)
 
     def stop(
-        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str #! DUDA
+        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str
     ) -> None:
         """
         Stops the machine
@@ -217,7 +227,7 @@ class OpenshiftService(DynamicService):
         self.api.stop_vm_instance(vmid)
 
     def shutdown(
-        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str #! DUDA
+        self, caller_instance: typing.Optional['DynamicUserService | DynamicPublication'], vmid: str
     ) -> None:
         """
         Shutdowns the machine, same as stop (both tries soft shutdown, it's a openshift thing)

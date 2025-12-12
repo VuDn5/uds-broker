@@ -43,6 +43,7 @@ from . import types, consts, exceptions
 
 logger = logging.getLogger(__name__)
 
+
 class OpenshiftClient:
     cluster_url: str
     api_url: str
@@ -360,7 +361,8 @@ class OpenshiftClient:
         if size:
             return size
         return (
-            response.get("spec", {}).get("pvc", {}).get("resources", {}).get("requests", {}).get("storage") or ""
+            response.get("spec", {}).get("pvc", {}).get("resources", {}).get("requests", {}).get("storage")
+            or ""
         )
 
     def get_pvc_size(self, api_url: str, namespace: str, pvc_name: str) -> str:
@@ -374,7 +376,7 @@ class OpenshiftClient:
         if capacity:
             return capacity
         raise Exception(f"Could not get the size of PVC {pvc_name}")
-    
+
     def get_pvc_storage_class_and_volume_mode(
         self, api_url: str, namespace: str, source_pvc_name: str
     ) -> tuple[str | None, str | None]:
@@ -458,8 +460,10 @@ class OpenshiftClient:
         # Use the source PVC size and volumeMode for the new DataVolumeTemplate
         pvc_size = self.get_pvc_size(api_url, namespace, source_pvc_name)
 
-        source_storage_class, source_volume_mode = self.get_pvc_storage_class_and_volume_mode(api_url, namespace, source_pvc_name)
-        
+        source_storage_class, source_volume_mode = self.get_pvc_storage_class_and_volume_mode(
+            api_url, namespace, source_pvc_name
+        )
+
         pvc_spec = {
             "accessModes": ["ReadWriteOnce"],
             "resources": {"requests": {"storage": pvc_size}},
@@ -489,7 +493,7 @@ class OpenshiftClient:
             iface.pop('macAddress', None)
 
         logger.info(f"Creating VM '{new_vm_name}' from cloned PVC '{new_dv_name}'.")
-        #logger.info(f"VM Object: {vm_obj}")
+        # logger.info(f"VM Object: {vm_obj}")
 
         create_path = f"/apis/kubevirt.io/v1/namespaces/{namespace}/virtualmachines"
         try:
@@ -548,14 +552,14 @@ class OpenshiftClient:
         Returns True if the VM was started successfully, else False.
         """
 
-        # Get Vm info 
+        # Get Vm info
         path = f"/apis/kubevirt.io/v1/namespaces/{namespace}/virtualmachines/{vm_name}"
         try:
             vm_obj = self.do_request('GET', path)
         except Exception as e:
             logging.error(f"Could not get source VM: {e}")
             return False
-        
+
         # Update runStrategy to Always
         vm_obj['spec']['runStrategy'] = 'Always'
         try:
@@ -564,14 +568,14 @@ class OpenshiftClient:
             return True
         except Exception as e:
             logging.info(f"Error starting VM {vm_name}: {e}")
-            return False 
+            return False
 
     def stop_vm(self, api_url: str, namespace: str, vm_name: str) -> bool:
         """
         Stop a VM by name.
         Returns True if the VM was stopped successfully, else False.
         """
-        # Get Vm info 
+        # Get Vm info
         path = f"/apis/kubevirt.io/v1/namespaces/{namespace}/virtualmachines/{vm_name}"
         try:
             vm_obj = self.do_request('GET', path)
@@ -587,7 +591,7 @@ class OpenshiftClient:
             return True
         except Exception as e:
             logging.info(f"Error starting VM {vm_name}: {e}")
-            return False 
+            return False
 
     def copy_vm_same_size(
         self, api_url: str, namespace: str, source_vm_name: str, new_vm_name: str, storage_class: str

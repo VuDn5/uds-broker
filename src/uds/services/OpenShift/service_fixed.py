@@ -150,7 +150,7 @@ class OpenshiftServiceFixed(FixedService):  # pylint: disable=too-many-public-me
         """
         Gets an available machine from the fixed list and assigns it.
         """
-        found_vmid: typing.Optional[str] = None #! DUDA
+        found_vmid: typing.Optional[str] = None  #! DUDA
         try:
             with self._assigned_access() as assigned:
                 for checking_vmid in self.sorted_assignables_list():
