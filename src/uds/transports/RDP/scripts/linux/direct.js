@@ -15,7 +15,7 @@ const executablePath =
     Process.findExecutable('thincast-client') ||
     Process.findExecutable('thincast') ||
     Process.findExecutable('xfreerdp3') ||
-    Process.findExecutable('xfreerdp') ||
+    Process.findExecutable('xfreerdp2') ||
     Process.findExecutable('xfreerdp');
 
 if (!executablePath) {
